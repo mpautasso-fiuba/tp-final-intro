@@ -46,13 +46,20 @@ CREATE TABLE generos (
 CREATE TABLE juegos_plataformas (
     id           SERIAL PRIMARY KEY,
     id_juego     INT REFERENCES juegos(id),
-    id_plataforma INT REFERENCES plataformas(id),
+    id_plataforma INT REFERENCES plataformas(id)
 );
 
 CREATE TABLE juegos_generos (
     id         SERIAL PRIMARY KEY,
     id_juego   INT REFERENCES juegos(id),
-    id_genero  INT REFERENCES generos(id),
+    id_genero  INT REFERENCES generos(id)
 );
 
-
+CREATE TABLE tiendas (
+    id              SERIAL PRIMARY KEY,
+    juego_id        INT REFERENCES juegos(id),
+    steam_id        INT,
+    url_steam       VARCHAR(255),
+    ps_store_id     VARCHAR(100),
+    url_ps_store    VARCHAR(255)
+);
