@@ -2,12 +2,11 @@ const dbClient = require('./db_conection.js');
 
 async function getAllDesarrolladoras() {
     const result = await dbClient.query('SELECT * FROM desarrolladoras');
-    console.log(result.rows)
     return result.rows
 }
 async function getDesarrolladoraById(id){
     const result = await dbClient.query('SELECT * FROM desarrolladoras where id = $1',[id])
-    return result.rows
+    return result.rows[0]
 }
 
 async function existsDesarrolladoraByNombre(nombre) {
