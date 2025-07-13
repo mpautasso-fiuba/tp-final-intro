@@ -34,8 +34,8 @@ CREATE TABLE comentarios (
 
 
 CREATE TABLE plataformas (
-    id               SERIAL PRIMARY KEY,
-    nombre_plataforma VARCHAR(50) NOT NULL
+    id      SERIAL PRIMARY KEY,
+    nombre  VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE generos (

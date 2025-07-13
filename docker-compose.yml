@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   backend:
     build: ./backend
@@ -7,25 +5,30 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
     depends_on:
       - postgres
     environment:
       - DB_HOST=postgres
+      - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=tp_final_intro_db
+      - DB_NAME=videojuegos
     command: ["npx", "nodemon", "src/app.js"]
-
   postgres:
-    image: postgres:15
+    image: postgres:17
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - ./.volumes/postgres/data:/var/lib/postgresql/data/
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+      - ./base_de_datos:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-      - POSTGRES_DB=tp_final_intro_db
-
+      - POSTGRES_DB=videojuegos
+  frontend:
+    image: nginx:stable
+    container_name: frontend
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
