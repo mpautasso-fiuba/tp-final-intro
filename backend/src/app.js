@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const generosRoute = require('./routes/generos_api');
+const desarrolladorasRoute = require('./routes/desarrolladoras_api');
 
 app.use(express.json());
 
@@ -12,6 +13,7 @@ app.get("/api/v1/health", (req, res) => {
 //Ruteo de enpoints de generos
 app.use('/api/v1/generos', generosRoute);
 
+app.use('/api/v1/desarrolladoras', desarrolladorasRoute);
 
 app.listen(PORT, () => {
   console.log(`Server initiated at port ${PORT}`);
