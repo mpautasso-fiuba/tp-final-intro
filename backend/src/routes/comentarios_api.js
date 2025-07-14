@@ -9,6 +9,7 @@ const {
   updateComentario,
   deleteComentario
 } = require("../repositories/comentarios_repository.js");
+const dbClient = require("../repositories/db_conection.js");
 
 app.use(express.json());
 
@@ -72,7 +73,11 @@ app.post("/", async (req, res) => {
   if (!juego_id) {
     return res.status(400).send("Falta el campo 'juego_id'");
   }
-
+  
+  const result = await dbClient.query('SELECT * FROM juegos where id = $1',[juego_id]);
+  if(result.rows[0] === undefined){
+    return res.status(404).send("El id del juego no existe")
+  }
   if (!texto || !texto.trim()) {
     return res.status(400).send("Falta el campo 'texto'");
   }
@@ -102,13 +107,10 @@ app.post("/", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-// actualizar comentario
 app.put("/:id", async (req, res) => {
   const comentario_id = req.params.id;
   const {
     usuario,
-    juego_id,
     texto,
     fecha_publicacion,
     calificacion,
@@ -124,7 +126,6 @@ app.put("/:id", async (req, res) => {
 
     const datosActualizados = {
       usuario: usuario?.trim() || comentarioExistente.usuario,
-      juego_id: juego_id || comentarioExistente.juego_id,
       texto: texto?.trim() || comentarioExistente.texto,
       fecha_publicacion: fecha_publicacion || comentarioExistente.fecha_publicacion,
       calificacion: calificacion !== undefined ? calificacion : comentarioExistente.calificacion,
