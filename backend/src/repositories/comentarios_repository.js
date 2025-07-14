@@ -46,7 +46,6 @@ async function addComentario(data) {
 async function updateComentario(id, data) {
   const {
     usuario,
-    juego_id,
     texto,
     fecha_publicacion,
     calificacion,
@@ -57,15 +56,14 @@ async function updateComentario(id, data) {
   const result = await dbClient.query(
     `UPDATE comentarios
      SET usuario = $1,
-         juego_id = $2,
-         texto = $3,
-         fecha_publicacion = $4,
-         calificacion = $5,
-         horas_jugadas = $6,
-         terminado = $7
-     WHERE id = $8
+         texto = $2,
+         fecha_publicacion = $3,
+         calificacion = $4,
+         horas_jugadas = $5,
+         terminado = $6
+     WHERE id = $7
      RETURNING *;`,
-    [usuario, juego_id, texto, fecha_publicacion, calificacion, horas_jugadas, terminado, id]
+    [usuario, texto, fecha_publicacion, calificacion, horas_jugadas, terminado, id]
   );
 
   return result.rows[0];
