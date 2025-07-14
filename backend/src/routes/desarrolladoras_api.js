@@ -1,0 +1,126 @@
+const express = require("express");
+const app = express();
+const {
+    getAllDesarrolladoras,
+    getDesarrolladoraById,
+    existsDesarrolladoraByNombre,
+    addDesarrolladora,
+    updateDesarrolladora,
+    deleteDesarrolladora
+} = require("../repositories/desarolladoras_repository.js");
+
+app.use(express.json());
+
+
+app.get("/", async (req, res) => {
+  try {
+    const desarrolladoras = await getAllDesarrolladoras();
+    res.json(desarrolladoras);
+  } catch (error) {
+    console.error("Error en la carga de desarrolladoras:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.get("/:id", async(req,res) => {
+  let desarrolladora_id = req.params.id
+  try{
+    const desarrolladora = await getDesarrolladoraById(desarrolladora_id)
+    if(desarrolladora === undefined){
+      return res.status(404).send("Desarrolladora no encontrada");;
+    }
+    res.json(desarrolladora);
+  }
+  catch (error){
+    console.error("Error en la carga de desarrolladoras:", error);
+    res.status(500).send("Internal Server Error");
+  }
+})
+
+app.post("/", async (req, res) => {
+  const { nombre, 
+          imagen_url, 
+          fecha_fundacion, 
+          pais_sede_central, 
+          presidente_actual } = req.body;
+
+  if (!nombre || !nombre.trim()) {
+    return res.status(400).send("Falta el campo 'nombre'");
+  }
+
+  if (!pais_sede_central || !pais_sede_central.trim()) {
+    return res.status(400).send("Falta el campo 'pais_sede_central'");
+  }
+
+  if (!presidente_actual || !presidente_actual.trim()) {
+    return res.status(400).send("Falta el campo 'presidente_actual'");
+  }
+
+  try {
+    const alreadyExists = await existsDesarrolladoraByNombre(nombre.trim());
+    if (alreadyExists) {
+      return res.status(409).send("Ya existe una desarrolladora con ese nombre");
+    }
+
+    const result = await addDesarrolladora({
+      nombre: nombre.trim(),
+      imagen_url: imagen_url?.trim() || null,
+      fecha_fundacion: fecha_fundacion || null,
+      pais_sede_central: pais_sede_central.trim(),
+      presidente_actual: presidente_actual.trim()
+    });
+    
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Error al agregar desarrolladora:", error);
+    res.status(500).send("Error interno del servidor");
+  }
+});
+
+app.put("/:id", async (req, res) => {
+  const desarrolladora_id = req.params.id;
+  const {
+    nombre,
+    imagen_url,
+    fecha_fundacion,
+    pais_sede_central,
+    presidente_actual
+  } = req.body;
+  try {
+    const desarrolladoraExistente = await getDesarrolladoraById(desarrolladora_id);
+    if (!desarrolladoraExistente) {
+      return res.status(404).send("Desarrolladora no encontrada");
+    }
+    const datosActualizados = {
+      nombre: nombre?.trim() || desarrolladoraExistente.nombre,
+      imagen_url: imagen_url?.trim() || desarrolladoraExistente.imagen_url,
+      fecha_fundacion: fecha_fundacion || desarrolladoraExistente.fecha_fundacion,
+      pais_sede_central: pais_sede_central?.trim() || desarrolladoraExistente.pais_sede_central,
+      presidente_actual: presidente_actual?.trim() || desarrolladoraExistente.presidente_actual
+    };
+    const result = await updateDesarrolladora(desarrolladora_id, datosActualizados);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error al actualizar desarrolladora:", error);
+    res.status(500).json("Internal Server Error")
+  }
+});
+
+
+app.delete("/:id", async (req, res) => {
+  let desarrolladora_id = req.params.id;
+  try {
+    const desarrolladora_existente = await getDesarrolladoraById(desarrolladora_id);
+    if (desarrolladora_existente === undefined) {
+      return res.status(404).send("Desarrolladora no encontrada");
+    }
+    await deleteDesarrolladora(desarrolladora_id);
+
+    res.status(200).json(desarrolladora_existente);
+  } catch (error) {
+    console.error("Error al eliminar desarrolladora:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+module.exports = app;
