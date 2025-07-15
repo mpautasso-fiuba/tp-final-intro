@@ -6,8 +6,11 @@ async function getAllGeneros() {
 }
 
 async function getGeneroById(id) {
-    const result = await dbClient.query('SELECT * FROM generos WHERE id = $1', [id]);
-    return result.rows;
+    const result = await dbClient.query('SELECT * FROM generos WHERE id = $1 LIMIT 1', [id]);
+    if (result.rows.length == 0) {
+        return undefined;
+    }
+    return result.rows[0];
 }
 
 async function existsGeneroByNombre(nombre) {
