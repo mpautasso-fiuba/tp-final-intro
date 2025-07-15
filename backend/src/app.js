@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3000;
 const generosRoute = require('./routes/generos_api');
 const comentariosRoute = require('./routes/comentarios_api');
 const desarrolladorasRoute = require('./routes/desarrolladoras_api');
+const plataformasRoute = require('./routes/plataformas_api');
 
 app.use(cors());
 app.use(express.json());
@@ -20,6 +21,10 @@ app.use('/api/v1/generos', generosRoute);
 app.use('/api/v1/desarrolladoras', desarrolladorasRoute);
 
 app.use('/api/v1/comentarios',comentariosRoute);
+
+//Ruteo de enpoints de plataformas
+app.use('/api/v1/plataformas', plataformasRoute);
+
 
 app.listen(PORT, () => {
   console.log(`Server initiated at port ${PORT}`);
