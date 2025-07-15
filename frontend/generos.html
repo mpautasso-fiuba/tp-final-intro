@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Géneros</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+    </div>
+
+    <div id="notification-container-info" class="notification is-info is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+        <span id="notification-message-info"></span>
+    </div>
+    <br>
+    <div class="container">
+        <h1 class="title  has-text-centered">Géneros de videojuegos</h1>
+        <br>
+        <div class="is-flex is-justify-content-center">
+            <table class="table" style="width: 60%;">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Editar</th>
+                        <th>Borrar</th>
+                    </tr>
+                </thead>  
+                <tbody id="generos-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="./src/navbar.js"></script>
+    <script>
+        const generosBackendUrl = "http://localhost:3000/api/v1/generos";
+
+        function cargarGeneros() {
+            let generosTableBody = document.getElementById("generos-table-body");
+            generosTableBody.innerHTML = "";
+
+            try {
+                fetch(generosBackendUrl).then(response => {
+                    console.log(response);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                }).then(data => {
+                    console.log(data);
+                    data.forEach(genero => {
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${genero.nombre}</td>
+                            <td><button class="button is-info">Editar</button></td>
+                            <td><button class="button is-danger" onClick="deleteGenero(${genero.id})">Borrar</button></td>
+                        `;
+                        generosTableBody.appendChild(row);
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching generos:', error);
+            }
+        }
+        
+        function deleteGenero(id) {
+            console.log(`Borrando género con id: ${id}`);
+            fetch(`${generosBackendUrl}/${id}`, {method: 'DELETE'})
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.message || 'Error al eliminar el ítem');
+                    });
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Género borrado:', data);
+                showInfoNotification("Género borrado correctamente");
+                cargarGeneros();
+            }).catch(error => {
+                console.error('Error borrando género:', error);
+                showErrorNotification(error.message);
+            });
+            
+        }
+
+        function showInfoNotification(message) {
+            const container = document.getElementById('notification-container-info');
+            const msg = document.getElementById('notification-message-info');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+        }
+
+        function showErrorNotification(message) {
+            const container = document.getElementById('notification-container-error');
+            const msg = document.getElementById('notification-message-error');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+        }
+
+        function closeNotification(notificationId) {
+            const container = document.getElementById(notificationId);
+            container.classList.add('is-hidden');
+        }
+
+        cargarGeneros();
+    </script>
+</body>
+</html>
