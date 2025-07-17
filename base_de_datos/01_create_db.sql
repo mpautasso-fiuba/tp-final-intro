@@ -1,6 +1,6 @@
 CREATE TABLE desarrolladoras (
     id SERIAL PRIMARY KEY,
-    nombre              VARCHAR(100)  NOT NULL,
+    nombre              VARCHAR(100)  UNIQUE,
     imagen_url          VARCHAR(255),
     fecha_fundacion     DATE,
     pais_sede_central   VARCHAR(50)   NOT NULL,
@@ -34,12 +34,12 @@ CREATE TABLE comentarios (
 
 CREATE TABLE plataformas (
     id      SERIAL PRIMARY KEY,
-    nombre  VARCHAR(50) NOT NULL
+    nombre  VARCHAR(50) UNIQUE
 );
 
 CREATE TABLE generos (
     id     SERIAL PRIMARY KEY,
-    nombre VARCHAR(50)   NOT NULL
+    nombre VARCHAR(50)   UNIQUE
 );
 
 CREATE TABLE juegos_plataformas (
@@ -57,7 +57,7 @@ CREATE TABLE juegos_generos (
 CREATE TABLE tiendas (
     id              SERIAL PRIMARY KEY,
     juego_id        INT REFERENCES juegos(id),
-    steam_id        INT,
+    steam_id        VARCHAR(100),
     url_steam       VARCHAR(255),
     ps_store_id     VARCHAR(100),
     url_ps_store    VARCHAR(255)
