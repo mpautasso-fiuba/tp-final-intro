@@ -21,6 +21,28 @@
     <div class="container">
         <h1 class="title  has-text-centered">Géneros de videojuegos</h1>
         <br>
+        <div class="is-flex is-justify-content-center"> 
+            <form id="genero-form" onsubmit="event.preventDefault(); agregarGenero();">
+                <input type="hidden" id="form-genero-id" />
+
+                <div class="field columns">
+                    <label class="label column" id="form-genero-label">Nombre del género</label>
+                    
+                    <div class="control column is-half">
+                    <input class="input" type="text" id="form-genero-nombre" name="nombre" placeholder="Ej: Acción" required />
+                    </div>
+                    
+                    <div class="control column">
+                    <button class="button is-primary" type="submit" id="form-genero-submit">Guardar</button>
+                    </div>
+
+                    <div class="control column is-narrow is-hidden" id="form-genero-cancelar-container">
+                    <button class="button is-light" type="button" onclick="resetFormulario()">Cancelar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <br>
         <div class="is-flex is-justify-content-center">
             <table class="table" style="width: 60%;">
                 <thead>
@@ -57,8 +79,8 @@
                         let row = document.createElement("tr");
                         row.innerHTML = `
                             <td>${genero.nombre}</td>
-                            <td><button class="button is-info">Editar</button></td>
-                            <td><button class="button is-danger" onClick="deleteGenero(${genero.id})">Borrar</button></td>
+                            <td><button class="button is-info" onClick="editarGenero(${genero.id}, '${genero.nombre}')">Editar</button></td>
+                            <td><button class="button is-danger" onClick="confirmDelete(${genero.id}, '${genero.nombre}')">Borrar</button></td>
                         `;
                         generosTableBody.appendChild(row);
                     });
@@ -68,6 +90,41 @@
             }
         }
         
+        function agregarGenero() {
+            const nombre = document.getElementById("form-genero-nombre").value;
+            const id = document.getElementById("form-genero-id").value;
+
+            if (!nombre.trim()) {
+                showErrorNotification("El nombre no puede estar vacío.");
+                return;
+            }
+
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `${generosBackendUrl}/${id}` : generosBackendUrl;
+
+            fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.message || 'Error al guardar el género');
+                    });
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Género agregado:', data);
+                showInfoNotification("Género agregado correctamente");
+                resetFormulario();
+                cargarGeneros();
+            }).catch(error => {
+                console.error('Error agregando género:', error);
+                showErrorNotification(error.message);
+            });
+        }
+
         function deleteGenero(id) {
             console.log(`Borrando género con id: ${id}`);
             fetch(`${generosBackendUrl}/${id}`, {method: 'DELETE'})
@@ -81,6 +138,7 @@
             }).then(data => {
                 console.log('Género borrado:', data);
                 showInfoNotification("Género borrado correctamente");
+                resetFormulario();
                 cargarGeneros();
             }).catch(error => {
                 console.error('Error borrando género:', error);
@@ -89,14 +147,43 @@
             
         }
 
+        function editarGenero(id, nombre) {
+            document.getElementById("form-genero-id").value = id;
+            document.getElementById("form-genero-nombre").value = nombre;
+
+            document.getElementById("form-genero-label").textContent = "Editar género";
+            document.getElementById("form-genero-submit").textContent = "Actualizar";
+            document.getElementById("form-genero-cancelar-container").classList.remove("is-hidden");
+
+            document.getElementById("genero-form").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function confirmDelete(id, nombre) {
+            if (confirm(`¿Estás seguro que deseas borrar el género "${nombre}"?`)) {
+                deleteGenero(id);
+            }
+        }
+
+        function resetFormulario() {
+            document.getElementById("form-genero-id").value = "";
+            document.getElementById("form-genero-nombre").value = "";
+
+            document.getElementById("form-genero-label").textContent = "Nombre del género";
+            document.getElementById("form-genero-submit").textContent = "Guardar";
+            document.getElementById("form-genero-cancelar-container").classList.add("is-hidden");
+        }
+
         function showInfoNotification(message) {
+            closeNotification('notification-container-error');
             const container = document.getElementById('notification-container-info');
             const msg = document.getElementById('notification-message-info');
             msg.textContent = message;
             container.classList.remove('is-hidden');
+            closeNotification('notification-container-error');
         }
 
         function showErrorNotification(message) {
+            closeNotification('notification-container-info');
             const container = document.getElementById('notification-container-error');
             const msg = document.getElementById('notification-message-error');
             msg.textContent = message;
