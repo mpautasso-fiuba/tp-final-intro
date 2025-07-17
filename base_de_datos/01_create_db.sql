@@ -9,16 +9,15 @@ CREATE TABLE desarrolladoras (
 
 CREATE TABLE juegos (
     id                     SERIAL PRIMARY KEY,
-    nombre                 VARCHAR(100)  NOT NULL,
+    nombre                 VARCHAR(100)  UNIQUE,
     descripcion            TEXT          NOT NULL,
-    precio                 FLOAT NOT NULL,
-    imagen_url                VARCHAR(255),
-    pegi                   INT           NOT NULL,
-    calificacion_promedio  NUMERIC(3,2),
+    precio_usd             FLOAT NOT NULL,
+    imagen_url             VARCHAR(255),
+    fecha_publicacion      DATE          NOT NULL,
     web_oficial            VARCHAR(255)  NOT NULL,
-    desarrolladora_id      INT           REFERENCES desarrolladoras(id),
-    steam_id               INT UNIQUE,
-    url_steam              VARCHAR(255)
+    pegi                   INT           NOT NULL,
+    puntaje_metacritic     INT,
+    desarrolladora_id      INT           REFERENCES desarrolladoras(id)
 );
 
 CREATE TABLE comentarios (
