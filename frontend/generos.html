@@ -159,7 +159,7 @@
         }
 
         function confirmDelete(id, nombre) {
-            if (confirm(`¿Estás seguro que deseas borrar el género "${nombre}"?`)) {
+            if (confirm(`¿Estás seguro que deseas borrar el género "${nombre}"? Todos los juegos dejarán de tener este género.`)) {
                 deleteGenero(id);
             }
         }

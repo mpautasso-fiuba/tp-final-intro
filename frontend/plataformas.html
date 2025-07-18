@@ -159,7 +159,7 @@
         }
 
         function confirmDelete(id, nombre) {
-            if (confirm(`¿Estás seguro que deseas borrar la plataforma "${nombre}"?`)) {
+            if (confirm(`¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`)) {
                 deletePlataforma(id);
             }
         }
