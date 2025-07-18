@@ -77,11 +77,19 @@ async function deleteComentario(id) {
   return result.rows[0];
 }
 
+async function deleteComentariosByIdJuegoId(id_juego){
+  const result = await dbClient.query(
+    'DELETE FROM comentarios where juego_id = $1 RETURNING *;',[id_juego]
+  );
+  return result.rows;
+}
+
 module.exports = {
   getAllComentarios,
   getComentarioById,
   getComentariosByJuegoId,
   addComentario,
   updateComentario,
-  deleteComentario
+  deleteComentario,
+  deleteComentariosByIdJuegoId
 };
