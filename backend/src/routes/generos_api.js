@@ -8,6 +8,7 @@ const {
     editarGeneroById,
     deleteGeneroById
 } = require("../repositories/generos_repository.js");
+const { deleteAllJuegoGeneroByGeneroId } = require('../repositories/juegos_generos_repository.js');
 
 app.use(express.json());
 
@@ -69,7 +70,9 @@ app.delete("/:id", async (req, res) => {
     const genero = await getGeneroById(genero_id);
     if(genero === undefined) {
       return res.status(404).json({ message: "El género no existe"});
-    }
+    }    
+    const resultDeleteReferences = await deleteAllJuegoGeneroByGeneroId(genero_id);
+
     const result = await deleteGeneroById(genero_id);
     res.json("Borrado correctamente");
   } catch (error) {
