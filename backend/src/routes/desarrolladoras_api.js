@@ -11,31 +11,30 @@ const {
 
 app.use(express.json());
 
-
 app.get("/", async (req, res) => {
   try {
     const desarrolladoras = await getAllDesarrolladoras();
     res.json(desarrolladoras);
   } catch (error) {
     console.error("Error en la carga de desarrolladoras:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-app.get("/:id", async(req,res) => {
-  let desarrolladora_id = req.params.id
+app.get("/:id", async(req, res) => {
+  let desarrolladora_id = req.params.id;
   try{
-    const desarrolladora = await getDesarrolladoraById(desarrolladora_id)
+    const desarrolladora = await getDesarrolladoraById(desarrolladora_id);
     if(desarrolladora === undefined){
-      return res.status(404).send("Desarrolladora no encontrada");;
+      return res.status(404).json({ message: "Desarrolladora no encontrada" });
     }
     res.json(desarrolladora);
   }
   catch (error){
     console.error("Error en la carga de desarrolladoras:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
-})
+});
 
 app.post("/", async (req, res) => {
   const { nombre, 
@@ -45,21 +44,21 @@ app.post("/", async (req, res) => {
           presidente_actual } = req.body;
 
   if (!nombre || !nombre.trim()) {
-    return res.status(400).send("Falta el campo 'nombre'");
+    return res.status(400).json({ message: "Falta el campo 'nombre'" });
   }
 
   if (!pais_sede_central || !pais_sede_central.trim()) {
-    return res.status(400).send("Falta el campo 'pais_sede_central'");
+    return res.status(400).json({ message: "Falta el campo 'pais_sede_central'" });
   }
 
   if (!presidente_actual || !presidente_actual.trim()) {
-    return res.status(400).send("Falta el campo 'presidente_actual'");
+    return res.status(400).json({ message: "Falta el campo 'presidente_actual'" });
   }
 
   try {
     const alreadyExists = await existsDesarrolladoraByNombre(nombre.trim());
     if (alreadyExists) {
-      return res.status(409).send("Ya existe una desarrolladora con ese nombre");
+      return res.status(409).json({ message: "Ya existe una desarrolladora con ese nombre" });
     }
 
     const result = await addDesarrolladora({
@@ -73,7 +72,7 @@ app.post("/", async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error("Error al agregar desarrolladora:", error);
-    res.status(500).send("Error interno del servidor");
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
@@ -89,7 +88,7 @@ app.put("/:id", async (req, res) => {
   try {
     const desarrolladoraExistente = await getDesarrolladoraById(desarrolladora_id);
     if (!desarrolladoraExistente) {
-      return res.status(404).send("Desarrolladora no encontrada");
+      return res.status(404).json({ message: "Desarrolladora no encontrada" });
     }
     const datosActualizados = {
       nombre: nombre?.trim() || desarrolladoraExistente.nombre,
@@ -102,24 +101,23 @@ app.put("/:id", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error("Error al actualizar desarrolladora:", error);
-    res.status(500).json("Internal Server Error")
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
 
 app.delete("/:id", async (req, res) => {
   let desarrolladora_id = req.params.id;
   try {
     const desarrolladora_existente = await getDesarrolladoraById(desarrolladora_id);
     if (desarrolladora_existente === undefined) {
-      return res.status(404).send("Desarrolladora no encontrada");
+      return res.status(404).json({ message: "Desarrolladora no encontrada" });
     }
     await deleteDesarrolladora(desarrolladora_id);
 
-    res.status(200).json(desarrolladora_existente);
+    res.status(200).json({ message: "Desarrolladora eliminada correctamente", data: desarrolladora_existente });
   } catch (error) {
     console.error("Error al eliminar desarrolladora:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
