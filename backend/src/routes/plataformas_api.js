@@ -8,6 +8,7 @@ const {
     editarPlataformaById,
     deletePlataformaById
 } = require("../repositories/plataformas_repository.js");
+const { deleteAllJuegoPlataformaByPlataformaId } = require('../repositories/juegos_plataformas_repository.js');
 
 app.use(express.json());
 
@@ -71,6 +72,8 @@ app.delete("/:id", async (req, res) => {
     if(plataforma === undefined) {
       return res.status(404).json({ message: "La plataforma no existe"});
     }
+    const resultDeleteReferences = await deleteAllJuegoPlataformaByPlataformaId(plataforma_id);
+
     const result = await deletePlataformaById(plataforma_id);
     res.json("Borrada correctamente");
   } catch (error) {
