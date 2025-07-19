@@ -154,6 +154,57 @@
             });
         }
 
+    function agregarComentario() {
+            const id = document.getElementById("form-id").value;
+            const comentario = {
+                usuario: document.getElementById("form-usuario").value.trim(),
+                juego_id: parseInt(document.getElementById("form-juego_id").value),
+                texto: document.getElementById("form-texto").value.trim(),
+                fecha_publicacion: document.getElementById("form-fecha_publicacion").value || null,
+                calificacion: parseInt(document.getElementById("form-calificacion").value),
+                horas_jugadas: document.getElementById("form-horas_jugadas").value ? parseInt(document.getElementById("form-horas_jugadas").value) : null,
+                terminado: document.getElementById("form-terminado").value === "true"
+            };
+
+            const method = id ? "PUT" : "POST";
+            const url = id ? `${comentariosUrl}/${id}` : comentariosUrl;
+
+            fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(comentario)
+            })
+            .then(res => {
+                if (!res.ok) return res.text().then(text => { throw new Error(text) });
+                return res.json();
+            })
+            .then(() => {
+                showInfoNotification(id ? "Comentario actualizado" : "Comentario agregado");
+                resetFormulario();
+                cargarComentarios();
+            })
+            .catch(err => {
+                console.error(err);
+                showErrorNotification(err.message);
+            });
+    }
+
+    function editarComentario(c) {
+            document.getElementById("form-id").value = c.id;
+            document.getElementById("form-usuario").value = c.usuario;
+            document.getElementById("form-juego_id").value = c.juego_id;
+            document.getElementById("form-texto").value = c.texto;
+            document.getElementById("form-fecha_publicacion").value = c.fecha_publicacion || "";
+            document.getElementById("form-calificacion").value = c.calificacion;
+            document.getElementById("form-horas_jugadas").value = c.horas_jugadas ?? "";
+            document.getElementById("form-terminado").value = c.terminado ? "true" : "false";
+
+            document.getElementById("form-submit").textContent = "Actualizar";
+            document.getElementById("form-cancelar").classList.remove("is-hidden");
+            document.getElementById("form-fecha_publicacion").disabled = true;
+            document.getElementById("comentario-form").scrollIntoView({ behavior: 'smooth' });
+    }
+
     function resetFormulario() {
             document.getElementById("comentario-form").reset();
             document.getElementById("form-id").value = "";
@@ -161,7 +212,6 @@
             document.getElementById("form-cancelar").classList.add("is-hidden");
             document.getElementById("form-fecha_publicacion").disabled = false;
     }
-
 
 
     function showInfoNotification(message) {
