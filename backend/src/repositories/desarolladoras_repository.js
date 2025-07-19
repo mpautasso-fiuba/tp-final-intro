@@ -1,5 +1,7 @@
 const dbClient = require('./db_conection.js');
-
+const {
+  deleteComentariosByIdJuegoId
+} = require("../repositories/comentarios_repository.js");
 async function getAllDesarrolladoras() {
     const result = await dbClient.query('SELECT * FROM desarrolladoras');
     return result.rows
@@ -53,8 +55,18 @@ async function updateDesarrolladora(id, data) {
 }
 
 async function deleteDesarrolladora(id) {
-    const result = await dbClient.query('DELETE FROM desarrolladoras where id = $1',[id])
-    return result.rows;
+  const juegos = await dbClient.query('SELECT * FROM juegos where id = $1',[id])
+  let len = juegos.rows.length
+  if(len != 0){
+    for(let i = 0; i < len;i++){
+      console.log(juegos.rows[i])
+      deleteComentariosByIdJuegoId(juegos.rows[i].id)
+      await dbClient.query('DELETE from juegos where id = $1',[juegos.rows[i].id])
+    }
+  }
+  
+  const result = await dbClient.query('DELETE FROM desarrolladoras where id = $1',[id])
+  return result.rows;
 }
 module.exports = {
     getAllDesarrolladoras,
