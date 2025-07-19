@@ -32,6 +32,8 @@ VALUES
 (7, 'Ubisoft', 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Ubisoft_Logo.svg', '1986-03-28', 'Francia', 'Yves Guillemot'),
 (8, 'Rockstar Games', 'https://upload.wikimedia.org/wikipedia/en/1/13/Rockstar_Games_Logo.svg', '1998-12-01', 'Estados Unidos', 'Sam Houser');
 
+-- Set sequence for desarrolladoras
+SELECT setval('desarrolladoras_id_seq', 9, false); 
 
 --Inserts Juegos
 INSERT INTO juegos(id, nombre, descripcion, precio_usd, imagen_url, fecha_publicacion, web_oficial, pegi, puntaje_metacritic, desarrolladora_id)
@@ -60,6 +62,8 @@ VALUES
 (8, 'Grand Theft Auto V', 'Viví la historia entrelazada de tres criminales muy diferentes en Los Santos, una ciudad enorme y vibrante llena de posibilidades. Acción, caos y libertad en el sandbox más ambicioso de Rockstar.', 
 44.99, 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/capsule_616x353.jpg?t=1717789397', '2015-04-14', 'https://www.rockstargames.com/V', 18, 96, 8);
 
+-- Set sequence for juegos
+SELECT setval('juegos_id_seq', 9, false); 
 
 -- Inserts Comentarios
 INSERT INTO comentarios(usuario, juego_id, texto, fecha_publicacion, calificacion, horas_jugadas, terminado) VALUES 

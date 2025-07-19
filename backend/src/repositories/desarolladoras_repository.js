@@ -1,6 +1,6 @@
 const dbClient = require('./db_conection.js');
 const {
-  deleteComentariosByIdJuegoId
+  deleteComentariosByJuegoId
 } = require("../repositories/comentarios_repository.js");
 async function getAllDesarrolladoras() {
     const result = await dbClient.query('SELECT * FROM desarrolladoras');
@@ -9,6 +9,11 @@ async function getAllDesarrolladoras() {
 async function getDesarrolladoraById(id){
     const result = await dbClient.query('SELECT * FROM desarrolladoras where id = $1',[id])
     return result.rows[0]
+}
+
+async function existsDesarrolladoraById(id) {
+    const result = await dbClient.query('SELECT EXISTS (SELECT 1 FROM desarrolladoras WHERE id = $1)', [id]);
+    return result.rows[0].exists;
 }
 
 async function existsDesarrolladoraByNombre(nombre) {
@@ -55,7 +60,7 @@ async function deleteDesarrolladora(id) {
   if(len != 0){
     for(let i = 0; i < len;i++){
       console.log(juegos.rows[i])
-      deleteComentariosByIdJuegoId(juegos.rows[i].id)
+      deleteComentariosByJuegoId(juegos.rows[i].id)
       await dbClient.query('DELETE from juegos where id = $1',[juegos.rows[i].id])
     }
   }
@@ -66,6 +71,7 @@ async function deleteDesarrolladora(id) {
 module.exports = {
     getAllDesarrolladoras,
     getDesarrolladoraById,
+    existsDesarrolladoraById,
     existsDesarrolladoraByNombre,
     addDesarrolladora,
     updateDesarrolladora,
