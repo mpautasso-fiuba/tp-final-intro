@@ -77,7 +77,7 @@ async function deleteComentario(id) {
   return result.rows[0];
 }
 
-async function deleteComentariosByIdJuegoId(id_juego){
+async function deleteComentariosByJuegoId(id_juego){
   const result = await dbClient.query(
     'DELETE FROM comentarios where juego_id = $1 RETURNING *;',[id_juego]
   );
@@ -91,5 +91,5 @@ module.exports = {
   addComentario,
   updateComentario,
   deleteComentario,
-  deleteComentariosByIdJuegoId
+  deleteComentariosByJuegoId
 };

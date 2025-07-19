@@ -1,6 +1,6 @@
 const dbClient = require('./db_conection.js');
 const {
-  deleteComentariosByIdJuegoId
+  deleteComentariosByJuegoId
 } = require("../repositories/comentarios_repository.js");
 async function getAllDesarrolladoras() {
     const result = await dbClient.query('SELECT * FROM desarrolladoras');
@@ -60,7 +60,7 @@ async function deleteDesarrolladora(id) {
   if(len != 0){
     for(let i = 0; i < len;i++){
       console.log(juegos.rows[i])
-      deleteComentariosByIdJuegoId(juegos.rows[i].id)
+      deleteComentariosByJuegoId(juegos.rows[i].id)
       await dbClient.query('DELETE from juegos where id = $1',[juegos.rows[i].id])
     }
   }

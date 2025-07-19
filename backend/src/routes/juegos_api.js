@@ -10,7 +10,7 @@ const { addAllJuegoPlataformaForJuegoIdAndPlataformasArray,
   deleteAllJuegoPlataformaByJuegoId, 
   deleteAllJuegoPlataformaByJuegoIdAndPlataformasArray } = require('../repositories/juegos_plataformas_repository.js');
 
-const { deleteAllComentariosByJuegoId } = require('../repositories/comentarios_repository.js');
+const { deleteComentariosByJuegoId } = require('../repositories/comentarios_repository.js');
 const {
     getAllJuegos,
     getJuegoById,
@@ -131,7 +131,7 @@ app.delete("/:id", async (req, res) => {
     }    
     const resultDeleteGeneroReferences = await deleteAllJuegoGeneroByJuegoId(juego_id);
     const resultDeletePlataformasReferences = await deleteAllJuegoPlataformaByJuegoId(juego_id);
-    const resultDeleteComentariosReferences = await deleteAllComentariosByJuegoId(juego_id);
+    const resultDeleteComentariosReferences = await deleteComentariosByJuegoId(juego_id);
 
     const result = await deleteJuegoById(juego_id);
     res.json("Borrado correctamente");
