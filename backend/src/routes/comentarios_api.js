@@ -20,7 +20,7 @@ app.get("/", async (req, res) => {
     res.json(comentarios);
   } catch (error) {
     console.error("Error al obtener comentarios:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -30,12 +30,12 @@ app.get("/juego/:juegoId", async (req, res) => {
   try {
     const comentarios = await getComentariosByJuegoId(juego_id);
     if (comentarios.length === 0) {
-        return res.status(404).send("No se pudo encontrar comentarios en el id del juego solicitado");
+        return res.status(404).json({ message: "No se pudo encontrar comentarios en el id del juego solicitado" });
     }
     return res.status(200).json(comentarios);
   } catch (error) {
     console.error("Error al obtener comentarios por juego:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -45,16 +45,21 @@ app.get("/:id", async (req, res) => {
   try {
     const comentario = await getComentarioById(comentario_id);
     if (comentario === undefined) {
-      return res.status(404).send("Comentario no encontrado");
+      return res.status(404).json({ message: "Comentario no encontrado" });
     }
     res.json(comentario);
   } catch (error) {
     console.error("Error al obtener comentario:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 // agregar comentario
+function esFechaValida(fecha) {
+    const hoy = new Date();
+    const fechaIngresada = new Date(fecha);
+    return fechaIngresada <= hoy;
+}
 app.post("/", async (req, res) => {
   const {
     usuario,
@@ -67,27 +72,29 @@ app.post("/", async (req, res) => {
   } = req.body;
 
   if (!usuario || !usuario.trim()) {
-    return res.status(400).send("Falta el campo 'usuario'");
+    return res.status(400).json({ message: "Falta el campo 'usuario'" });
   }
 
   if (!juego_id) {
-    return res.status(400).send("Falta el campo 'juego_id'");
+    return res.status(400).json({ message: "Falta el campo 'juego_id'" });
   }
   
   const result = await dbClient.query('SELECT * FROM juegos where id = $1',[juego_id]);
   if(result.rows[0] === undefined){
-    return res.status(404).send("El id del juego no existe")
+    return res.status(404).json({ message: "El id del juego no existe" });
   }
   if (!texto || !texto.trim()) {
-    return res.status(400).send("Falta el campo 'texto'");
+    return res.status(400).json({ message: "Falta el campo 'texto'" });
   }
-
+  if (!esFechaValida(req.body.fecha_publicacion)) {
+    return res.status(400).json({ error:"La fecha de publicacion es invalida"}); 
+  }
   if (calificacion === undefined || calificacion === null) {
-    return res.status(400).send("Falta el campo 'calificacion'");
+    return res.status(400).json({ message: "Falta el campo 'calificacion'" });
   }
 
   if (terminado === undefined || terminado === null) {
-    return res.status(400).send("Falta el campo 'terminado'");
+    return res.status(400).json({ message: "Falta el campo 'terminado'" });
   }
 
   try {
@@ -104,7 +111,7 @@ app.post("/", async (req, res) => {
     res.status(201).json(comentario);
   } catch (error) {
     console.error("Error al agregar comentario:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 app.put("/:id", async (req, res) => {
@@ -121,7 +128,7 @@ app.put("/:id", async (req, res) => {
   try {
     const comentarioExistente = await getComentarioById(comentario_id);
     if (!comentarioExistente) {
-      return res.status(404).send("Comentario no encontrado");
+      return res.status(404).json({ message: "Comentario no encontrado" });
     }
 
     const datosActualizados = {
@@ -137,7 +144,7 @@ app.put("/:id", async (req, res) => {
     res.status(200).json(resultado);
   } catch (error) {
     console.error("Error al actualizar comentario:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -147,14 +154,17 @@ app.delete("/:id", async (req, res) => {
   try {
     const comentarioExistente = await getComentarioById(comentario_id);
     if (comentarioExistente === undefined) {
-      return res.status(404).send("Comentario no encontrado");
+      return res.status(404).json({ message: "Comentario no encontrado" });
     }
 
     await deleteComentario(comentario_id);
-    res.status(200).json(comentarioExistente);
+    res.status(200).json({
+      message: "Comentario eliminado correctamente",
+      data: comentarioExistente
+    });
   } catch (error) {
     console.error("Error al eliminar comentario:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
