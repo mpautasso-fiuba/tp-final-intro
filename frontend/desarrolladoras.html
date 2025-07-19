@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Desarrolladoras</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+    </div>
+
+    <div id="notification-container-info" class="notification is-info is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+        <span id="notification-message-info"></span>
+    </div>
+
+    <div class="container">
+        <h1 class="title has-text-centered">Desarrolladoras de videojuegos</h1>
+
+        <form id="desarrolladora-form" onsubmit="event.preventDefault(); agregarDesarrolladora();">
+            <input type="hidden" id="form-id" />
+
+            <div class="columns is-multiline">
+                <div class="column is-half">
+                    <label class="label">Nombre</label>
+                    <input class="input" type="text" id="form-nombre" required />
+                </div>
+                <div class="column is-half">
+                    <label class="label">URL Imagen</label>
+                    <input class="input" type="url" id="form-imagen_url" />
+                </div>
+                <div class="column is-half">
+                    <label class="label">Fecha fundación</label>
+                    <input class="input" type="date" id="form-fecha_fundacion" />
+                </div>
+                <div class="column is-half">
+                    <label class="label">País sede central</label>
+                    <input class="input" type="text" id="form-pais_sede_central" required />
+                </div>
+                <div class="column is-half">
+                    <label class="label">Presidente actual</label>
+                    <input class="input" type="text" id="form-presidente_actual" required />
+                </div>
+                <div class="column is-full">
+                    <button class="button is-primary" type="submit" id="form-submit">Guardar</button>
+                    <button class="button is-light is-hidden" id="form-cancelar" onclick="resetFormulario()" type="button">Cancelar</button>
+                </div>
+            </div>
+        </form>
+        <hr />
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Imagen</th>
+                    <th>Fundación</th>
+                    <th>País</th>
+                    <th>Presidente</th>
+                    <th>Editar</th>
+                    <th>Borrar</th>
+                </tr>
+            </thead>
+            <tbody id="desarrolladoras-table-body"></tbody>
+        </table>
+    </div>
+    <script src="./src/navbar.js"></script>
+
+    <script>
+        const desarrolladorasUrl = "http://localhost:3000/api/v1/desarrolladoras";
+
+        function cargarDesarrolladoras() {
+            fetch(desarrolladorasUrl)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("desarrolladoras-table-body");
+                    tbody.innerHTML = "";
+                    data.forEach(d => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${d.nombre}</td>
+                                <td>${d.imagen_url ? `<img src="${d.imagen_url}" width="50"/>` : "—"}</td>
+                                <td>${d.fecha_fundacion || "—"}</td>
+                                <td>${d.pais_sede_central}</td>
+                                <td>${d.presidente_actual}</td>
+                                <td><button class="button is-info" onclick='editarDesarrolladora(${JSON.stringify(d)})'>Editar</button></td>
+                                <td><button class="button is-danger" onclick='confirmDelete(${d.id}, "${d.nombre}")'>Borrar</button></td>
+                            </tr>
+                        `;
+                    });
+                }).catch(err => {
+                    showErrorNotification("Error al cargar desarrolladoras");
+                    console.error(err);
+                });
+        }
+
+        function agregarDesarrolladora() {
+            const id = document.getElementById("form-id").value;
+            const desarrolladora = {
+                nombre: document.getElementById("form-nombre").value.trim(),
+                imagen_url: document.getElementById("form-imagen_url").value.trim(),
+                fecha_fundacion: document.getElementById("form-fecha_fundacion").value,
+                pais_sede_central: document.getElementById("form-pais_sede_central").value.trim(),
+                presidente_actual: document.getElementById("form-presidente_actual").value.trim()
+            };
+
+            const method = id ? "PUT" : "POST";
+            const url = id ? `${desarrolladorasUrl}/${id}` : desarrolladorasUrl;
+
+            fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(desarrolladora)
+            })
+            .then(res => {
+                if (!res.ok) return res.text().then(text => { throw new Error(text) });
+                return res.json();
+            })
+            .then(() => {
+                document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+                showInfoNotification(id ? "Desarrolladora actualizada" : "Desarrolladora agregada");
+                resetFormulario();
+                cargarDesarrolladoras();
+            })
+            .catch(err => {
+                console.error(err);
+                showErrorNotification(err.message);
+            });
+        }
+        function editarDesarrolladora(d) {
+            document.getElementById("form-id").value = d.id;
+            document.getElementById("form-nombre").value = d.nombre;
+            document.getElementById("form-imagen_url").value = d.imagen_url || "";
+            document.getElementById("form-fecha_fundacion").value = d.fecha_fundacion || "";
+            document.getElementById("form-pais_sede_central").value = d.pais_sede_central;
+            document.getElementById("form-presidente_actual").value = d.presidente_actual;
+
+            document.getElementById("form-submit").textContent = "Actualizar";
+            document.getElementById("form-cancelar").classList.remove("is-hidden");
+            document.getElementById("form-fecha_fundacion").disabled = true;
+
+            document.getElementById("desarrolladora-form").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetFormulario() {
+            document.getElementById("form-id").value = "";
+            document.getElementById("form-nombre").value = "";
+            document.getElementById("form-imagen_url").value = "";
+            document.getElementById("form-fecha_fundacion").value = "";
+            document.getElementById("form-pais_sede_central").value = "";
+            document.getElementById("form-presidente_actual").value = "";
+
+            document.getElementById("form-submit").textContent = "Guardar";
+            document.getElementById("form-cancelar").classList.add("is-hidden");
+            document.getElementById("form-fecha_fundacion").disabled = false;
+
+
+        }
+        
+        function deleteDesarrolladora(id){
+            fetch(`${desarrolladorasUrl}/${id}`, { method: "DELETE" })
+                .then(res => {
+                    document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+                    if (!res.ok) return res.text().then(text => { throw new Error(text) });
+                    return res.json();
+                })
+                .then(() => {
+                    document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+                    showInfoNotification("Desarrolladora eliminada");
+                    cargarDesarrolladoras();
+                })
+                .catch(err => {
+                    console.error(err);
+                    showErrorNotification(err.message);
+                });
+        }
+        function confirmDelete(id, nombre) {
+            if (confirm(`¿Estas seguro de eliminar desarrolladora "${nombre}"? Se eliminaran todos los juegos asociadas a esta y sus comentarios`)) {
+                deleteDesarrolladora(id)
+            }
+        }
+
+        function showInfoNotification(message) {
+            closeNotification("notification-container-error");
+            const container = document.getElementById("notification-container-info");
+            container.classList.remove("is-hidden");
+            document.getElementById("notification-message-info").textContent = message;
+        }
+
+        function showErrorNotification(message) {
+            closeNotification("notification-container-info");
+            const container = document.getElementById("notification-container-error");
+            container.classList.remove("is-hidden");
+            document.getElementById("notification-message-error").textContent = message;
+        }
+
+        function closeNotification(id) {
+            document.getElementById(id).classList.add("is-hidden");
+        }
+
+        cargarDesarrolladoras();
+    </script>
+</body>
+</html>
