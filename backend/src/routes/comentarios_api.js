@@ -55,6 +55,11 @@ app.get("/:id", async (req, res) => {
 });
 
 // agregar comentario
+function esFechaValida(fecha) {
+    const hoy = new Date();
+    const fechaIngresada = new Date(fecha);
+    return fechaIngresada <= hoy;
+}
 app.post("/", async (req, res) => {
   const {
     usuario,
@@ -81,7 +86,9 @@ app.post("/", async (req, res) => {
   if (!texto || !texto.trim()) {
     return res.status(400).json({ message: "Falta el campo 'texto'" });
   }
-
+  if (!esFechaValida(req.body.fecha_publicacion)) {
+    return res.status(400).json({ error:"La fecha de publicacion es invalida"}); 
+  }
   if (calificacion === undefined || calificacion === null) {
     return res.status(400).json({ message: "Falta el campo 'calificacion'" });
   }

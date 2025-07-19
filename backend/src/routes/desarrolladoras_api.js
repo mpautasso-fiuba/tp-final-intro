@@ -35,6 +35,11 @@ app.get("/:id", async(req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+function esFechaValida(fecha) {
+    const hoy = new Date();
+    const fechaIngresada = new Date(fecha);
+    return fechaIngresada <= hoy;
+}
 
 app.post("/", async (req, res) => {
   const { nombre, 
@@ -54,7 +59,9 @@ app.post("/", async (req, res) => {
   if (!presidente_actual || !presidente_actual.trim()) {
     return res.status(400).json({ message: "Falta el campo 'presidente_actual'" });
   }
-
+  if (!esFechaValida(req.body.fecha_fundacion)) {
+    return res.status(400).json({ error:"La fecha de fundación es invalida"}); 
+  }
   try {
     const alreadyExists = await existsDesarrolladoraByNombre(nombre.trim());
     if (alreadyExists) {
@@ -81,7 +88,6 @@ app.put("/:id", async (req, res) => {
   const {
     nombre,
     imagen_url,
-    fecha_fundacion,
     pais_sede_central,
     presidente_actual
   } = req.body;
@@ -93,7 +99,6 @@ app.put("/:id", async (req, res) => {
     const datosActualizados = {
       nombre: nombre?.trim() || desarrolladoraExistente.nombre,
       imagen_url: imagen_url?.trim() || desarrolladoraExistente.imagen_url,
-      fecha_fundacion: fecha_fundacion || desarrolladoraExistente.fecha_fundacion,
       pais_sede_central: pais_sede_central?.trim() || desarrolladoraExistente.pais_sede_central,
       presidente_actual: presidente_actual?.trim() || desarrolladoraExistente.presidente_actual
     };
