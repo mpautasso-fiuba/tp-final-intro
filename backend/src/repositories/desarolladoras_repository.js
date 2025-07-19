@@ -9,6 +9,11 @@ async function getDesarrolladoraById(id){
     return result.rows[0]
 }
 
+async function existsDesarrolladoraById(id) {
+    const result = await dbClient.query('SELECT EXISTS (SELECT 1 FROM desarrolladoras WHERE id = $1)', [id]);
+    return result.rows[0].exists;
+}
+
 async function existsDesarrolladoraByNombre(nombre) {
   const result = await dbClient.query(
     'SELECT nombre FROM desarrolladoras WHERE nombre = ($1)',
@@ -54,6 +59,7 @@ async function deleteDesarrolladora(id) {
 module.exports = {
     getAllDesarrolladoras,
     getDesarrolladoraById,
+    existsDesarrolladoraById,
     existsDesarrolladoraByNombre,
     addDesarrolladora,
     updateDesarrolladora,
