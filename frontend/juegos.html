@@ -62,8 +62,14 @@
                 }).then(data => {
                     console.log(data);
                     data.forEach(juego => {
-                        plataformas = juego.plataformas.map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
-                        generos = juego.generos.map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
+                        plataformas = juego.plataformas.filter(p => p !== null).map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
+                        if (plataformas === "") {
+                            plataformas = "—";
+                        }
+                        generos = juego.generos.filter(p => p !== null).map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
+                        if (generos === "") {
+                            generos = "—";
+                        }
                         promedio_calificacion = juego.promedio_calificacion ? 
                         `<span class="tag is-link is-large">⭐${parseFloat(juego.promedio_calificacion).toFixed(2)}/10</span>` : "—";
                         let row = document.createElement("tr");
