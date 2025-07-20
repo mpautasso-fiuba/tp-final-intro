@@ -50,6 +50,21 @@ app.get("/:id", async (req, res) => {
   }
 });
 
+//GET - '/api/v1/juegos/:id/details'
+app.get("/:id/details", async (req, res) => {
+  let juego_id = req.params.id;
+  try {
+    const juego = await getJuegoWithPlataformasAndGeneros(juego_id);
+    if(juego === undefined) {
+      return res.status(404).json({ message: "El juego no existe"});
+    }
+    res.json(juego);
+  } catch (error) {
+    console.error("Error en la carga de juego:", error);
+    res.status(500).json({ message: "Internal Server Error"});
+  }
+});
+
 //POST - '/api/v1/juegos'
 app.post("/", async (req, res) => {
   const { nombre, descripcion, precio_usd, imagen_url, fecha_publicacion, web_oficial,
