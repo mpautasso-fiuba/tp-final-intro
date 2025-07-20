@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Juego</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+    </div>
+    <section class="section">
+    <div class="container">
+      <h1 id="form-title" class="title is-4 has-text-centered">Formulario de nuevo juego</h1>
+      <div class="notification is-danger is-hidden" id="error-msg"></div>
+
+      <form id="juego-form" class="box" onsubmit="event.preventDefault(); agregarJuego();">
+        <div class="field">
+          <label class="label">Nombre</label>
+          <div class="control">
+            <input class="input" type="text" id="nombre" placeholder="Ej: Hollow Knight" required />
+          </div>
+        </div>
+
+        <div class="field is-horizontal is-justify-content-center">
+            <div class="field-body">
+                <div class="column is-one-third">
+                    <label class="label">Desarrolladora</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                        <select id="desarrolladora_id" required>
+                            <option value="" id="select-desarrolladora">Seleccione una desarrolladora</option>
+                        </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-one-third">
+                    <label class="label">Clasificación PEGI</label>
+                    <div class="control">
+                        <div class="select">
+                        <select id="pegi" required>
+                            <option value="">Seleccione la clasificación</option>
+                            <option value="3">Apto para mayores de 3 años</option>
+                            <option value="7">Apto para mayores de 7 años</option>
+                            <option value="12">Apto para mayores de 12 años</option>
+                            <option value="16">Apto para mayores de 16 años</option>
+                            <option value="18">Apto para mayores de 18 años</option>
+                        </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-one-sixth">
+                    <label class="label">Puntaje Metacritic</label>
+                    <div class="control">
+                        <input class="input" type="number" id="puntaje_metacritic" min="0" max="100" />
+                    </div>
+                </div>
+                <div class="column is-one-sixth">
+                    <label class="label">Precio</label>
+                    <div class="field has-addons">
+                        <p class="control">
+                            <a class="button is-static">
+                                USD $
+                            </a>
+                        </p>
+                        <p class="control is-expanded">
+                            <input class="input" type="number" id="precio_usd" min="0" step="0.01" />
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="columns">
+            <div class="column is-one-third">
+                <label class="label">Fecha de publicación</label>
+                <input class="input" type="date" id="form-fecha_publicacion" required/>
+            </div>
+            <div class="column is-two-thirds">
+                <label class="label">Web Oficial</label>
+                <div class="control">
+                    <input class="input" type="url" id="web_oficial" required/>
+                </div>
+            </div>
+        </div> 
+
+        <div class="field">
+          <label class="label">Imagen URL</label>
+          <div class="control">
+            <input class="input" type="url" id="imagen_url" />
+          </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Géneros</label>
+            <div class="control columns is-multiline" id="checkboxes-generos"></div>
+        </div>
+
+        <div class="field">
+            <label class="label">Plataformas</label>
+            <div class="control columns is-multiline" id="checkboxes-plataformas"></div>
+        </div>
+
+        <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Descripción</label>
+            </div>
+            <div class="field-body">
+                <div class="field">
+                <div class="control">
+                    <textarea class="textarea" id="descripcion" placeholder="Ingresa una descripcion del juego."></textarea>
+                </div>
+                </div>                
+            </div>
+        </div>
+
+
+
+        <div class="field is-grouped is-grouped-centered">
+            <div class="control">
+                <button class="button is-primary" type="submit">Guardar</button>
+            </div>
+            <div class="control">
+                <button class="button is-warning" onClick="limpiarFormulario()" type="button" id="reset-button">Borrar formulario</button>
+            </div>
+            <div class="control">
+                <a class="button is-light" href="juegos.html" id="exit-button">Cancelar</a>
+            </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+    <script src="./src/navbar.js"></script>
+  <script>
+    const id = new URLSearchParams(window.location.search).get("id");
+    const formTitle = document.getElementById("form-title");
+    const exit_button = document.getElementById("exit-button");
+    const reset_button = document.getElementById("reset-button");
+    const errorMsg = document.getElementById("error-msg");
+    const form = document.getElementById("juego-form");
+    const select_desarrolladora = document.getElementById("desarrolladora_id");
+    const container_checkbox_plataformas = document.getElementById("checkboxes-plataformas");
+    const container_checkbox_generos = document.getElementById("checkboxes-generos");
+
+    const juegosBackendUrl = "http://localhost:3000/api/v1/juegos";
+    const desarrolladorasBackendUrl = "http://localhost:3000/api/v1/desarrolladoras";
+    const generosBackendUrl = "http://localhost:3000/api/v1/generos";
+    const plataformasBackendUrl = "http://localhost:3000/api/v1/plataformas";
+
+    function setDataIfItsAJuegoUpdate (id) {
+      formTitle.textContent = "Editar juego";
+      fetch(`${juegosBackendUrl}/${id}/details`)
+        .then(res => {
+          if (!res.ok) throw new Error("Juego no encontrado");
+          return res.json();
+        })
+        .then(juego => {
+            formTitle.textContent = `Editando el juego '${juego.nombre}'`;
+            exit_button.href = `./juego.html?id=${id}` || "";
+            exit_button.textContent = `Volver a página del juego` || "";
+            reset_button.onclick = function() {resetJuegoValues(id)};
+            reset_button.textContent = `Reset formulario con el juego` || "";
+            
+            const fechaFormateada = new Date(juego.fecha_publicacion).toLocaleDateString('en-CA');
+            
+            document.getElementById("nombre").value = juego.nombre || "";
+            select_desarrolladora.value = juego.desarrolladora_id || "";
+            document.getElementById("web_oficial").value = juego.web_oficial || "";
+            document.getElementById("pegi").value = juego.pegi || "3";
+            document.getElementById("precio_usd").value = juego.precio_usd || 0.00;
+            document.getElementById("form-fecha_publicacion").value = fechaFormateada;
+            document.getElementById("puntaje_metacritic").value = juego.puntaje_metacritic || "";
+            document.getElementById("imagen_url").value = juego.imagen_url || "";
+            document.getElementById("descripcion").value = juego.descripcion || "";
+            juego.generos.forEach(genero => {
+                const checkbox = document.querySelector(`input[name="checkbox-generos"][value="${genero.id}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            juego.plataformas.forEach(plataforma => {
+                const checkbox = document.querySelector(`input[name="checkbox-plataformas"][value="${plataforma.id}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        })
+        .catch(err => {
+            showErrorNotification(err.message);
+        });
+    }
+
+    function agregarJuego() {
+      const data = {
+        nombre: document.getElementById("nombre").value.trim(),
+        desarrolladora_id: parseInt(document.getElementById("desarrolladora_id").value) || 0,
+        web_oficial: document.getElementById("web_oficial").value.trim(),
+        puntaje_metacritic: parseInt(document.getElementById("puntaje_metacritic").value) || 0,
+        imagen_url: document.getElementById("imagen_url").value.trim(),
+        pegi: parseInt(document.getElementById("pegi").value) || 0,
+        precio_usd: parseFloat(document.getElementById("precio_usd").value) || 0.00,
+        fecha_publicacion: document.getElementById("form-fecha_publicacion").value || null,
+        descripcion: document.getElementById("descripcion").value.trim(),
+        generos: Array.from(document.querySelectorAll('input[name="checkbox-generos"]:checked'))
+            .map(checkbox => parseInt(checkbox.value)),
+        plataformas: Array.from(document.querySelectorAll('input[name="checkbox-plataformas"]:checked'))
+            .map(checkbox => parseInt(checkbox.value))
+      };
+
+      console.log("Datos del juego:", data);
+
+      if (!data.nombre) {
+        return showErrorNotification("El nombre es obligatorio");
+      }
+
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${juegosBackendUrl}/${id}` : juegosBackendUrl;
+
+      fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+        .then(res => {
+          if (!res.ok) return res.json().then(err => { throw new Error(err.message); });
+          return res.json();
+        })
+        .then(result => {
+            if (id) {
+                console.log("Juego actualizado correctamente");
+                window.location.href = `./juego.html?id=${id}`;
+            } else {
+                console.log("Juego agregado correctamente");
+                window.location.href = `juegos.html`;
+            }
+        })
+        .catch(err => {
+          showErrorNotification(err.message);
+        });
+    };
+
+    function limpiarFormulario() {
+        console.log("Limpiando formulario");
+        document.getElementById("juego-form").reset();
+        document.getElementById("error-msg").textContent = "";
+    };
+
+    function resetJuegoValues(id) {
+        limpiarFormulario();
+        console.log("Reseteando valores del juego con id:", id);
+        setDataIfItsAJuegoUpdate(id);
+    }
+
+    function cargarDesarrolladoras() {
+        return fetch(desarrolladorasBackendUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                    data.forEach(d => {
+                        const option = document.createElement("option");
+                        option.value = d.id;
+                        option.textContent = d.nombre;
+                        select_desarrolladora.appendChild(option);
+                    });
+                    })
+                    .catch(err => {
+                        console.error("Error cargando desarrolladoras:", err);
+                        showErrorNotification("No se pudieron cargar las desarrolladoras");
+                    });
+    }
+
+    function cargarPlataformas() {
+        return fetch(plataformasBackendUrl)
+                    .then(res => res.json())
+                    .then(items => {
+                        items.forEach(plataforma => {
+                            const div = document.createElement("div");
+                            div.className = "field";
+                            div.innerHTML = `
+                            <label class="checkbox column is-full">
+                                <input type="checkbox" name="checkbox-plataformas" value="${plataforma.id}">
+                                ${plataforma.nombre}
+                            </label>
+                            `;
+                            container_checkbox_plataformas.appendChild(div);
+                        });
+                    })
+                    .catch(err => {
+                        console.error(`Error cargando las plataformas:`, err);
+                        showErrorNotification(`Error cargando las plataformas`);
+                    });
+    }
+
+    function cargarGeneros() {
+        return fetch(generosBackendUrl)
+                    .then(res => res.json())
+                    .then(items => {
+                        items.forEach(genero => {
+                            const div = document.createElement("div");
+                            div.className = "field";
+                            div.innerHTML = `
+                            <label class="checkbox column is-full">
+                                <input type="checkbox" name="checkbox-generos" value="${genero.id}">
+                                ${genero.nombre}
+                            </label>
+                            `;
+                            container_checkbox_generos.appendChild(div);
+                        });
+                    })
+                    .catch(err => {
+                        console.error(`Error cargando los géneros:`, err);
+                        showErrorNotification(`Error cargando los géneros`);
+                    });
+    }
+
+    function showErrorNotification(message) {
+        const container = document.getElementById('notification-container-error');
+        const msg = document.getElementById('notification-message-error');
+        msg.textContent = message;
+        container.classList.remove('is-hidden');
+    }
+
+    function closeNotification(notificationId) {
+        const container = document.getElementById(notificationId);
+        container.classList.add('is-hidden');
+    }
+
+    Promise.all([
+        cargarDesarrolladoras(),
+        cargarPlataformas(),
+        cargarGeneros()
+    ]).then(() => {
+        if (id) setDataIfItsAJuegoUpdate(id);
+    });
+
+  </script>
+</body>
+</html>

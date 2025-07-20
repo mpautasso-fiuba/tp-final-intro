@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Juego</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+    </div>
+
+    <div id="notification-container-info" class="notification is-info is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+        <span id="notification-message-info"></span>
+    </div>
+    <br>
+
+    <div class="container">
+        <h1 class="title has-text-centered is-1" id="juego-title">Hollow Knight</h1>
+        <br>        
+    </div>
+
+  <div class="container">
+    <div class="columns">
+      <div class="column is-two-thirds">
+          <div class="box">
+            <div id="imagen" class="has-text-centered"></div>
+            <br />
+            <div class="content">
+              <p id="juego-description"></p>
+            </div>
+        </div>
+      </div>
+      <div class="column">
+        <div class="box">
+          <div class="content" id="juego-sidebar-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+<br />
+<br />
+    <div class="container">
+        <h2 class="title is-3 has-text-centered">Comentarios</h2>
+        <div id="comentarios-list" class="columns is-multiline"></div>
+    </div>
+
+
+    <script src="./src/navbar.js"></script>
+    <script>
+        const id = new URLSearchParams(window.location.search).get('id');
+        console.log(`Cargando juego con id: ${id}`);
+
+        const juegoBackendUrl = "http://localhost:3000/api/v1/juegos/" + id;
+        const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+ 
+        let juegoTitleBody = document.getElementById("juego-title");
+        juegoTitleBody.innerHTML = "";
+
+        let juegoSidebarBody = document.getElementById("juego-sidebar-body");
+        let juegoDescripcionBody = document.getElementById("juego-description");
+
+        let juego = {};
+        try {
+            fetch(juegoBackendUrl).then(response => {
+                console.log(response);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(juegoResult => {
+                console.log(juegoResult);
+                juego = juegoResult;
+                plataformas = juego.plataformas.map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
+                generos = juego.generos.map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
+                promedio_calificacion = juego.promedio_calificacion ? 
+                `<span class="tag is-link is-large">⭐${parseFloat(juego.promedio_calificacion).toFixed(2)}/10</span>` : "—";
+
+                fechaFormateada = new Date(juego.fecha_publicacion).toLocaleDateString('en-CA');
+
+                juegoTitleBody.innerHTML = juego.nombre;
+                juegoSidebarBody.innerHTML = `
+                    <p><strong>Desarrolladora:</strong> ${juego.desarrolladora}</p>
+                    <p><strong>Fecha de publicacion:</strong> ${fechaFormateada}</p>
+                    <p><strong>Web Oficial:</strong> <a href="${juego.web_oficial}" target="_blank">${juego.web_oficial}</a></p>
+                    <p><strong>Puntaje Metacritic:</strong> <span class="tag is-success is-medium">${juego.puntaje_metacritic}</span></p>
+                    <p><strong>Promedio comentarios:</strong> ${promedio_calificacion}</p>
+                    <p><strong>Géneros:</strong> ${generos}</p>
+                    <p><strong>Plataformas:</strong> ${plataformas}</p>
+                    <p><strong>Pegi:</strong> ${juego.pegi}</p>
+                    <p><strong>Precio:</strong> USD$ ${parseFloat(juego.precio_usd).toFixed(2)}</p>
+                    <div class="buttons is-centered">
+                    <button class="button is-info is-half" onclick="editarJuego(${juego.id})">Editar Juego</button>
+                    <button class="button is-danger is-hald" onclick="confirmDeleteJuego(${juego.id},'${juego.nombre}')"> Borrar Juego</button>
+                    </div>
+                `;
+                if (juego.imagen_url) {
+                    const imagenElement = document.getElementById("imagen");
+                    imagenElement.innerHTML = `<img src="${juego.imagen_url}" alt="${juego.nombre}" width="500" class="has-text-centered"/>`;
+                } else {
+                    const imagenElement = document.getElementById("imagen");
+                    imagenElement.innerHTML = `<p>No hay imagen disponible</p>`;
+                }
+                juegoDescripcionBody.innerHTML = juego.descripcion || "No hay descripción disponible.";
+            });
+        } catch (error) {
+            console.error('Error fetching juego:', error);
+            alert('Error al cargar el juego: ' + error.message);
+
+        }
+        
+        function editarJuego(id) {
+            window.location.href = `./juego-form.html?id=${id}`;
+        }
+        
+        function deleteJuego(id) {
+            console.log(`Borrando juego con id: ${id}`);
+            fetch(`${juegoBackendUrl}`, {method: 'DELETE'})
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.message || 'Error al eliminar el ítem');
+                    });
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Juego borrado:', data);
+                showInfoNotification("Juego borrado correctamente");
+                window.location.href = `./juegos.html`;
+            }).catch(error => {
+                console.error('Error borrando juego:', error);
+                showErrorNotification(error.message);
+            });            
+        }
+
+        function confirmDeleteJuego(id, nombre) {
+            if (confirm(`¿Estás seguro que deseas borrar el juego "${nombre}"? Se eliminaran todos los comentarios de este juego.`)) {
+                deleteJuego(id);
+            }
+        }
+
+        function cargarComentariosDeJuego() {
+            fetch(`${comentariosUrl}/juego/${id}`)
+                .then(res => {
+                    if (!res.ok) {
+                        if (res.status === 404) {
+                            return res.text().then(text => { throw new Error("404"); });
+                        } else {
+                            return res.text().then(text => { throw new Error(text); });
+                        }
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    const contenedor = document.getElementById("comentarios-list");
+                    contenedor.innerHTML = "";
+                
+                    data.forEach(c => {
+                        const comentarioCard = document.createElement("div");
+                        comentarioCard.className = "column is-full";
+                        const fecha_comentario = c.fecha_publicacion? `${new Date(c.fecha_publicacion).toLocaleDateString('en-CA')}` : "—";
+                
+                        comentarioCard.innerHTML = `
+                            <div class="box">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p>
+                                            <strong>${c.usuario}</strong> 
+                                            <small>| Juego ID: ${c.juego_id}</small>
+                                            <br/>
+                                            <span class="has-text-grey is-size-7">
+                                                Fecha: ${fecha_comentario} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
+                                            </span>
+                                            <br/><br/>
+                                            <span>${c.texto}</span>
+                                        </p>
+                                    </div>
+                                    <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>Borrar</button>
+                                </div>
+                            </div>
+                        `;
+                        contenedor.appendChild(comentarioCard);
+                    });
+                })
+                .catch(err => {
+                    if (err.message !== "404") {
+                        console.error(err);
+                    }
+                    const contenedor = document.getElementById("comentarios-list");
+                    contenedor.innerHTML = `<div class="column is-full"><div class="box"><p class="">No hay comentarios aún sobre este juego. Tu puedes ser el primerx!!</p></div></div>`;
+                });
+        }
+
+        function eliminarComentario(id){
+            fetch(`${comentariosUrl}/${id}`, { method: "DELETE" })
+                .then(res => {
+                    if (!res.ok) return res.text().then(text => { throw new Error(text) });
+                    return res.json();
+                })
+                .then(() => {
+                    showInfoNotification("Comentario eliminado");
+                    cargarComentariosDeJuego();
+                })
+                .catch(err => {
+                    console.error(err);
+                    showErrorNotification(err.message);
+            });
+        }
+
+        function confirmDelete(comentario_id, usuario) {
+            if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
+                eliminarComentario(comentario_id)
+            }
+        }
+
+        function showInfoNotification(message) {
+            closeNotification('notification-container-error');
+            const container = document.getElementById('notification-container-info');
+            const msg = document.getElementById('notification-message-info');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+            closeNotification('notification-container-error');
+        }
+
+        function showErrorNotification(message) {
+            closeNotification('notification-container-info');
+            const container = document.getElementById('notification-container-error');
+            const msg = document.getElementById('notification-message-error');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+        }
+
+        function closeNotification(notificationId) {
+            const container = document.getElementById(notificationId);
+            container.classList.add('is-hidden');
+        }
+
+        cargarComentariosDeJuego();
+
+    </script>
+</body>
+</html>

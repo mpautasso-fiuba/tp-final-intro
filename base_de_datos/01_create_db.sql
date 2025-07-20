@@ -53,12 +53,3 @@ CREATE TABLE juegos_generos (
     id_juego   INT REFERENCES juegos(id),
     id_genero  INT REFERENCES generos(id)
 );
-
-CREATE TABLE tiendas (
-    id              SERIAL PRIMARY KEY,
-    juego_id        INT REFERENCES juegos(id),
-    steam_id        VARCHAR(100),
-    url_steam       VARCHAR(255),
-    ps_store_id     VARCHAR(100),
-    url_ps_store    VARCHAR(255)
-);

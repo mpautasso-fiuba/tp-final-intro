@@ -50,6 +50,21 @@ app.get("/:id", async (req, res) => {
   }
 });
 
+//GET - '/api/v1/juegos/:id/details'
+app.get("/:id/details", async (req, res) => {
+  let juego_id = req.params.id;
+  try {
+    const juego = await getJuegoWithPlataformasAndGeneros(juego_id);
+    if(juego === undefined) {
+      return res.status(404).json({ message: "El juego no existe"});
+    }
+    res.json(juego);
+  } catch (error) {
+    console.error("Error en la carga de juego:", error);
+    res.status(500).json({ message: "Internal Server Error"});
+  }
+});
+
 //POST - '/api/v1/juegos'
 app.post("/", async (req, res) => {
   const { nombre, descripcion, precio_usd, imagen_url, fecha_publicacion, web_oficial,
@@ -63,7 +78,7 @@ app.post("/", async (req, res) => {
     return res.status(400).json({ message: "Falta el campo 'descripcion'"});
   }
 
-  if (!precio_usd) {
+  if (precio_usd === undefined || precio_usd === null) {
     return res.status(400).json({ message: "Falta el campo 'precio_usd'"});
   } else if (isNaN(precio_usd) || parseFloat(precio_usd) < 0) {
     return res.status(400).json({ message: "El campo 'precio_usd' debe ser un número positivo"});
@@ -73,16 +88,22 @@ app.post("/", async (req, res) => {
     return res.status(400).json({ message: "Falta el campo 'web_oficial'"});
   }
 
-  if (!pegi) {
+  if (pegi === undefined || pegi === null) {
     return res.status(400).json({ message: "Falta el campo 'pegi'"});
   } else if (isNaN(pegi) || !pegiList.includes(parseInt(pegi))) {
     return res.status(400).json({ message: "El campo 'pegi' debe ser valor numérico válido"});
   }
 
-  if (!puntaje_metacritic) {
+  if (puntaje_metacritic === undefined || puntaje_metacritic === null) {
     return res.status(400).json({ message: "Falta el campo 'puntaje_metacritic'"});
   } else if (isNaN(puntaje_metacritic) || parseInt(puntaje_metacritic) < 0 || parseInt(puntaje_metacritic) > 100) {
     return res.status(400).json({ message: "El campo 'puntaje_metacritic' debe ser un número positivo entre 0 y 100"});
+  }
+
+  if (desarrolladora_id === undefined || desarrolladora_id === null) {
+    return res.status(400).json({ message: "Falta el campo 'desarrolladora_id'"});
+  } else if (isNaN(desarrolladora_id) || parseInt(desarrolladora_id) < 0) {
+    return res.status(400).json({ message: "El campo 'desarrolladora_id'  debe ser valor numérico válido"});
   }
 
 
@@ -156,7 +177,7 @@ app.put("/:id", async(req, res) => {
     return res.status(400).json({ message: "Falta el campo 'descripcion'"});
   }
 
-  if (!precio_usd) {
+  if (precio_usd === undefined || precio_usd === null) {
     return res.status(400).json({ message: "Falta el campo 'precio_usd'"});
   } else if (isNaN(precio_usd) || parseFloat(precio_usd) < 0) {
     return res.status(400).json({ message: "El campo 'precio_usd' debe ser un número positivo"});
@@ -166,18 +187,23 @@ app.put("/:id", async(req, res) => {
     return res.status(400).json({ message: "Falta el campo 'web_oficial'"});
   }
 
-  if (!pegi) {
+  if (pegi === undefined || pegi === null) {
     return res.status(400).json({ message: "Falta el campo 'pegi'"});
   } else if (isNaN(pegi) || !pegiList.includes(parseInt(pegi))) {
     return res.status(400).json({ message: "El campo 'pegi' debe ser valor numérico válido"});
   }
 
-  if (!puntaje_metacritic) {
+  if (puntaje_metacritic === undefined || puntaje_metacritic === null) {
     return res.status(400).json({ message: "Falta el campo 'puntaje_metacritic'"});
   } else if (isNaN(puntaje_metacritic) || parseInt(puntaje_metacritic) < 0 || parseInt(puntaje_metacritic) > 100) {
     return res.status(400).json({ message: "El campo 'puntaje_metacritic' debe ser un número positivo entre 0 y 100"});
   }
 
+  if (desarrolladora_id === undefined || desarrolladora_id === null) {
+    return res.status(400).json({ message: "Falta el campo 'desarrolladora_id'"});
+  } else if (isNaN(desarrolladora_id) || parseInt(desarrolladora_id) < 0) {
+    return res.status(400).json({ message: "El campo 'desarrolladora_id'  debe ser valor numérico válido"});
+  }
 
   try{
     const old_juego = await getJuegoWithPlataformasAndGeneros(juego_id);
