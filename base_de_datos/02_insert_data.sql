@@ -23,14 +23,14 @@ INSERT INTO plataformas(nombre) VALUES('Epic Games');
 --Inserts Desarrolladoras
 INSERT INTO desarrolladoras(id, nombre, imagen_url, fecha_fundacion, pais_sede_central, presidente_actual)
 VALUES 
-(1, 'Supergiant Games', 'https://upload.wikimedia.org/wikipedia/en/2/2d/Supergiant_Games_Logo.png', '2009-05-01', 'Estados Unidos', 'Amir Rao'),
-(2, 'Team Cherry', 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Team_Cherry_logo.svg/220px-Team_Cherry_logo.svg.png', '2014-01-01', 'Australia', 'Ari Gibson'),
-(3, 'Matt Makes Games', 'https://upload.wikimedia.org/wikipedia/en/d/d3/Matt_Makes_Games_Logo.png', '2012-05-01', 'Canadá', 'Matt Thorson'),
-(4, 'ConcernedApe', 'https://upload.wikimedia.org/wikipedia/en/c/c8/ConcernedApe_logo.png', '2015-01-01', 'Estados Unidos', 'Eric Barone'),
-(5, 'Motion Twin', 'https://upload.wikimedia.org/wikipedia/en/e/e6/Motion_Twin_Logo.png', '2001-01-01', 'Francia', 'Yohan Fanise'),
-(6, 'Sabotage Studio', 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Sabotage_Studio_Logo.png', '2016-04-01', 'Canadá', 'Philippe Dionne'),
-(7, 'Ubisoft', 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Ubisoft_Logo.svg', '1986-03-28', 'Francia', 'Yves Guillemot'),
-(8, 'Rockstar Games', 'https://upload.wikimedia.org/wikipedia/en/1/13/Rockstar_Games_Logo.svg', '1998-12-01', 'Estados Unidos', 'Sam Houser');
+(1, 'Supergiant Games', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Supergiant_Games_New_Logo.png/1280px-Supergiant_Games_New_Logo.png', '2009-05-01', 'Estados Unidos', 'Amir Rao'),
+(2, 'Team Cherry', 'https://assets.nintendo.eu/image/upload/f_auto/q_auto/v1626147565/NAL/Articles/The%20Metamorphosis%20of%20Hollow%20Knight/TeamCherry-500-wide.png', '2014-01-01', 'Australia', 'Ari Gibson'),
+(3, 'Matt Makes Games', 'https://upload.wikimedia.org/wikipedia/commons/2/27/Matt-makes-games-logo.png', '2012-05-01', 'Canadá', 'Matt Thorson'),
+(4, 'ConcernedApe', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2HQEpReu3rWM1uHhCE5mJrPR0S7qphodcig&s', '2015-01-01', 'Estados Unidos', 'Eric Barone'),
+(5, 'Motion Twin', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Motion_Twin_logo.svg/330px-Motion_Twin_logo.svg.png', '2001-01-01', 'Francia', 'Yohan Fanise'),
+(6, 'Sabotage Studio', 'https://sabotagestudio.com/wp-content/uploads/2022/03/presskit-sabotage-flag-medium.png', '2016-04-01', 'Canadá', 'Philippe Dionne'),
+(7, 'Ubisoft', 'https://actugeekgaming.com/wp-content/uploads/2023/07/Ubisoft-logo.jpg', '1986-03-28', 'Francia', 'Yves Guillemot'),
+(8, 'Rockstar Games', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Rockstar_Games_Logo.svg/250px-Rockstar_Games_Logo.svg.png', '1998-12-01', 'Estados Unidos', 'Sam Houser');
 
 -- Set sequence for desarrolladoras
 SELECT setval('desarrolladoras_id_seq', 9, false); 
