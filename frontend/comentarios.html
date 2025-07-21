@@ -1,258 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Comentarios</title>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <meta charset="UTF-8" />
+  <title>Comentarios</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="navbar-container"></div>
-    <div class="container">
-        <h1 class="title has-text-centered">Comentarios de Juegos</h1>
+  <div id="navbar-container"></div>
 
-        <div id="notification-container-error" class="notification is-danger is-hidden">
-            <button class="delete" onclick="closeNotification('notification-container-error')"></button>
-            <span id="notification-message-error"></span>
-        </div>
-        <div id="notification-container-info" class="notification is-info is-hidden">
-            <button class="delete" onclick="closeNotification('notification-container-info')"></button>
-            <span id="notification-message-info"></span>
-        </div>
+  <section class="hero is-primary is-bold fade-in">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Comentarios de videojuegos <i class="fas fa-comments"></i></h1>
+      </div>
+    </div>
+  </section>
 
-        <form id="comentario-form" onsubmit="event.preventDefault(); agregarComentario();">
-            <input type="hidden" id="form-id" />
-            <div class="columns is-multiline">
-                <div class="column is-half">
-                    <label class="label">Usuario</label>
-                    <input class="input" type="text" id="form-usuario" required />
-                </div>
-                <div class="column is-half">
-                    <label class="label">Juego ID</label>
-                    <input class="input" type="number" id="form-juego_id" required />
-                </div>
-                <div class="column is-full">
-                    <label class="label">Texto</label>
-                    <textarea class="textarea" id="form-texto" required></textarea>
-                </div>
-                <div class="column is-half">
-                    <label class="label">Fecha de publicación</label>
-                    <input class="input" type="date" id="form-fecha_publicacion" />
-                </div>
-                <div class="column is-half">
-                    <label class="label">Calificación (0-10)</label>
-                    <input class="input" type="number" id="form-calificacion" min="0" max="10" required />
-                </div>
-                <div class="column is-half">
-                    <label class="label">Horas jugadas</label>
-                    <input class="input" type="number" id="form-horas_jugadas" />
-                </div>
-                <div class="column is-half">
-                    <label class="label">¿Terminado?</label>
-                    <div class="select is-fullwidth">
-                        <select id="form-terminado" required>
-                            <option value="">Seleccionar</option>
-                            <option value="true">Sí</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="column is-full">
-                    <button class="button is-primary" id="form-submit"  type="submit">Guardar</button>
-                    <button class="button is-light is-hidden" id="form-cancelar" type="button" onclick="resetFormulario()">Cancelar</button>
-                </div>
-            </div>
-        </form>
-
-    <hr />
-
-     <div class="field has-addons mb-5">
-            <div class="control is-expanded">
-                <input class="input" type="number" id="input-filtro-juego" placeholder="Filtrar por ID de juego">
-            </div>
-            <div class="control">
-                <button class="button is-link" onclick="filtrarPorJuego()">Filtrar</button>
-            </div>
-            <div class="control">
-                <button class="button is-light" onclick="cargarComentarios()">Ver todos</button>
-            </div>
+  <div class="container fade-in mt-5">
+    <div id="notification-container-error" class="notification is-danger is-hidden">
+      <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+      <span id="notification-message-error"></span>
+    </div>
+    <div id="notification-container-info" class="notification is-info is-hidden">
+      <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+      <span id="notification-message-info"></span>
+    </div>
+    <div class="has-text-centered mb-4 level-left">
+        <button class="button is-primary" onclick="window.location.href='comentario-form.html'">Agregar Comentario</button>
+    </div>
+    <div class="field has-addons mb-5">
+      <div class="control is-expanded">
+        <input class="input" type="number" id="input-filtro-juego" placeholder="Filtrar por ID de juego">
+      </div>
+      <div class="control">
+        <button class="button is-link" onclick="filtrarPorJuego()">Filtrar</button>
+      </div>
+      <div class="control">
+        <button class="button is-light" onclick="cargarComentarios()">Ver todos</button>
+      </div>
     </div>
     <div id="comentarios-list" class="columns is-multiline"></div>
+    <hr />
+  </div>
 
-    <script src="./src/navbar.js"></script>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+      </p>
+    </div>
+  </footer>
 
-    <script>
-        const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+  <script src="./src/navbar.js"></script>
 
-        function mostrarComentarios(data) {
-            const contenedor = document.getElementById("comentarios-list");
-            contenedor.innerHTML = "";
-        
-            data.forEach(c => {
-                const comentarioCard = document.createElement("div");
-                comentarioCard.className = "column is-full";
-        
-                comentarioCard.innerHTML = `
-                    <div class="box">
-                        <div class="media-content">
-                            <div class="content">
-                                <p>
-                                    <strong>${c.usuario}</strong> 
-                                    <small>| Juego ID: ${c.juego_id}</small>
-                                    <br/>
-                                    <span class="has-text-grey is-size-7">
-                                        Fecha: ${c.fecha_publicacion || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
-                                    </span>
-                                    <br/><br/>
-                                    <span>${c.texto}</span>
-                                </p>
-                            </div>
-                            <button class="button is-small is-info mr-2" onclick='editarComentario(${JSON.stringify(c)})'>Editar</button>
-                            <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>Borrar</button>
-                        </div>
-                    </div>
-                `;
-                contenedor.appendChild(comentarioCard);
-            });
-        }
+  <script>
+    const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+
+    async function mostrarComentarios(data) {
+      const contenedor = document.getElementById("comentarios-list");
+      contenedor.innerHTML = "";
+
+      for (const c of data) {
+        let response = await fetch(`http://localhost:3000/api/v1/juegos/${c.juego_id}`);
+        const juego = await response.json();
+
+        const fecha_formateada = new Date(c.fecha_publicacion).toLocaleDateString('en-CA');
+
+        const comentarioCard = document.createElement("div");
+        comentarioCard.className = "column is-full";
+        comentarioCard.innerHTML = `
+        <div class="box">
+            <div class="media-content">
+            <div class="content">
+                <p>
+                <strong>${c.usuario}</strong>
+                <small>| Juego: ${juego.nombre}</small>
+                <br/>
+                <span class="has-text-grey is-size-7">
+                    Fecha: ${fecha_formateada || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
+                </span>
+                <br/><br/>
+                <span>${c.texto}</span>
+                </p>
+            </div>
+            <div class="buttons mt-3">
+                <a class="button is-small is-info" href="agregar_comentario.html?id=${c.id}">
+                <span class="icon"><i class="fas fa-edit"></i></span>
+                <span>Editar</span>
+                </a>
+                <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
+                <span class="icon"><i class="fas fa-trash"></i></span>
+                <span>Borrar</span>
+                </button>
+            </div>
+            </div>
+        </div>
+        `;
+        contenedor.appendChild(comentarioCard);
+      }
+    }
+
     function filtrarPorJuego() {
-        const juegoId = document.getElementById("input-filtro-juego").value;
-        if (!juegoId) {
-            showErrorNotification("Debe ingresar un ID de juego válido");
-            return;
-        }
+      const juegoId = document.getElementById("input-filtro-juego").value;
+      if (!juegoId) {
+        showErrorNotification("Debe ingresar un ID de juego válido");
+        return;
+      }
 
-        fetch(`${comentariosUrl}/juego/${juegoId}`)
-            .then(res => {
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
-                        throw new Error("No hay comentarios para ese juego");
-                    }
-                    return res.text().then(text => { throw new Error(text); });
-                }
-                return res.json();
-            })
-            .then(data => {
-                document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
-
-                mostrarComentarios(data);
-                showInfoNotification(`Se encontraron ${data.length} comentario(s) para el juego ID: ${juegoId}`);
-            })
-            .catch(err => {
-                console.error(err);
-                showErrorNotification(err.message);
-            });
-    }
-    function cargarComentarios() {
-        fetch(comentariosUrl)
-            .then(res => res.json())
-            .then(data => {
-                mostrarComentarios(data);
-            }).catch(err => {
-                showErrorNotification("Error al cargar comentarios");
-                console.error(err);
-            });
-        }
-
-    function agregarComentario() {
-            const id = document.getElementById("form-id").value;
-            const comentario = {
-                usuario: document.getElementById("form-usuario").value.trim(),
-                juego_id: parseInt(document.getElementById("form-juego_id").value),
-                texto: document.getElementById("form-texto").value.trim(),
-                fecha_publicacion: document.getElementById("form-fecha_publicacion").value || null,
-                calificacion: parseInt(document.getElementById("form-calificacion").value),
-                horas_jugadas: document.getElementById("form-horas_jugadas").value ? parseInt(document.getElementById("form-horas_jugadas").value) : null,
-                terminado: document.getElementById("form-terminado").value === "true"
-            };
-
-            const method = id ? "PUT" : "POST";
-            const url = id ? `${comentariosUrl}/${id}` : comentariosUrl;
-
-            fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(comentario)
-            })
-            .then(res => {
-                if (!res.ok) return res.text().then(text => { throw new Error(text) });
-                return res.json();
-            })
-            .then(() => {
-                showInfoNotification(id ? "Comentario actualizado" : "Comentario agregado");
-                resetFormulario();
-                cargarComentarios();
-            })
-            .catch(err => {
-                console.error(err);
-                showErrorNotification(err.message);
-            });
-    }
-
-    function editarComentario(c) {
-            document.getElementById("form-id").value = c.id;
-            document.getElementById("form-usuario").value = c.usuario;
-            document.getElementById("form-juego_id").value = c.juego_id;
-            document.getElementById("form-texto").value = c.texto;
-            document.getElementById("form-fecha_publicacion").value = c.fecha_publicacion || "";
-            document.getElementById("form-calificacion").value = c.calificacion;
-            document.getElementById("form-horas_jugadas").value = c.horas_jugadas ?? "";
-            document.getElementById("form-terminado").value = c.terminado ? "true" : "false";
-
-            document.getElementById("form-submit").textContent = "Actualizar";
-            document.getElementById("form-cancelar").classList.remove("is-hidden");
-            document.getElementById("form-fecha_publicacion").disabled = true;
-            document.getElementById("comentario-form").scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function resetFormulario() {
-            document.getElementById("comentario-form").reset();
-            document.getElementById("form-id").value = "";
-            document.getElementById("form-submit").textContent = "Guardar";
-            document.getElementById("form-cancelar").classList.add("is-hidden");
-            document.getElementById("form-fecha_publicacion").disabled = false;
-    }
-    function eliminarComentario(id){
-        fetch(`${comentariosUrl}/${id}`, { method: "DELETE" })
-            .then(res => {
-                if (!res.ok) return res.text().then(text => { throw new Error(text) });
-                return res.json();
-            })
-            .then(() => {
-                showInfoNotification("Comentario eliminado");
-                cargarComentarios();
-            })
-            .catch(err => {
-                console.error(err);
-                showErrorNotification(err.message);
+      fetch(`${comentariosUrl}/juego/${juegoId}`)
+        .then(res => {
+          if (!res.ok) {
+            if (res.status === 404) {
+              document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+              throw new Error("No hay comentarios para ese juego");
+            }
+            return res.text().then(text => { throw new Error(text); });
+          }
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+          mostrarComentarios(data);
+          showInfoNotification(`Se encontraron ${data.length} comentario(s) para el juego ID: ${juegoId}`);
+        })
+        .catch(err => {
+          console.error(err);
+          showErrorNotification(err.message);
         });
     }
+
+    function cargarComentarios() {
+      fetch(comentariosUrl)
+        .then(res => res.json())
+        .then(data => {
+          mostrarComentarios(data);
+        }).catch(err => {
+          showErrorNotification("Error al cargar comentarios");
+          console.error(err);
+        });
+    }
+
+    function eliminarComentario(id) {
+      fetch(`${comentariosUrl}/${id}`, { method: "DELETE" })
+        .then(res => {
+          if (!res.ok) return res.text().then(text => { throw new Error(text) });
+          return res.json();
+        })
+        .then(() => {
+          showInfoNotification("Comentario eliminado");
+          cargarComentarios();
+        })
+        .catch(err => {
+          console.error(err);
+          showErrorNotification(err.message);
+        });
+    }
+
     function confirmDelete(id, usuario) {
-        if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
-            document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
-            eliminarComentario(id)
-        }
+      if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
+        document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+        eliminarComentario(id);
+      }
     }
 
     function showInfoNotification(message) {
-        closeNotification("notification-container-error");
-        const container = document.getElementById("notification-container-info");
-        container.classList.remove("is-hidden");
-        document.getElementById("notification-message-info").textContent = message;
+      closeNotification("notification-container-error");
+      const container = document.getElementById("notification-container-info");
+      container.classList.remove("is-hidden");
+      document.getElementById("notification-message-info").textContent = message;
     }
 
     function showErrorNotification(message) {
-        closeNotification("notification-container-info");
-        const container = document.getElementById("notification-container-error");
-        container.classList.remove("is-hidden");
-        document.getElementById("notification-message-error").textContent = message;
+      closeNotification("notification-container-info");
+      const container = document.getElementById("notification-container-error");
+      container.classList.remove("is-hidden");
+      document.getElementById("notification-message-error").textContent = message;
     }
 
     function closeNotification(id) {
-        document.getElementById(id).classList.add("is-hidden");
+      document.getElementById(id).classList.add("is-hidden");
     }
-        
+
     cargarComentarios();
-    </script>
+  </script>
 </body>
 </html>
