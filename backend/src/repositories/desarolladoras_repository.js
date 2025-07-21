@@ -62,10 +62,11 @@ async function deleteDesarrolladora(id) {
   if(len != 0){
     for(let i = 0; i < len;i++){
       console.log(juegos.rows[i])
-      deleteAllJuegoGeneroByJuegoId(juegos.rows[i].id)
-      deleteAllJuegoPlataformaByJuegoId(juegos.rows[i].id)
-      deleteComentariosByJuegoId(juegos.rows[i].id)
-      deleteJuegoById(juegos.rows[i].id)
+      const juegoId = juegos.rows[i].id;
+      await deleteAllJuegoGeneroByJuegoId(juegoId);
+      await deleteAllJuegoPlataformaByJuegoId(juegoId);
+      await deleteComentariosByJuegoId(juegoId);
+      await deleteJuegoById(juegoId);
     }
   }
   
