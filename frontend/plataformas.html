@@ -1,201 +1,220 @@
 <!DOCTYPE html>
-<html>
+<html">
 <head>
-    <title>Plataformas</title>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <meta charset="UTF-8" />
+  <title>Plataformas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .table td, .table th {
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body>
-    <div id="navbar-container"></div>
-
+  <div id="navbar-container"></div>
+  <section class="hero is-primary is-bold fade-in">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Gestión de Plataformas</h1>
+        <h2 class="subtitle">Administrá todas las plataformas disponibles 🕹️</h2>
+      </div>
+    </div>
+  </section>
+  <div class="container fade-in" style="margin-top: 2rem;">
     <div id="notification-container-error" class="notification is-danger is-hidden">
-        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
-        <span id="notification-message-error"></span>
+      <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+      <span id="notification-message-error"></span>
     </div>
-
     <div id="notification-container-info" class="notification is-info is-hidden">
-        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
-        <span id="notification-message-info"></span>
+      <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+      <span id="notification-message-info"></span>
     </div>
-    <br>
-    <div class="container">
-        <h1 class="title  has-text-centered">Plataformas de videojuegos</h1>
-        <br>
-        <div class="is-flex is-justify-content-center"> 
-            <form id="plataforma-form" onsubmit="event.preventDefault(); agregarPlataforma();">
-                <input type="hidden" id="form-plataforma-id" />
-
-                <div class="field columns">
-                    <label class="label column" id="form-plataforma-label">Nombre de la plataforma</label>
-                    
-                    <div class="control column is-half">
-                    <input class="input" type="text" id="form-plataforma-nombre" name="nombre" placeholder="Ej: Nintendo Wii" required />
-                    </div>
-                    
-                    <div class="control column">
-                    <button class="button is-primary" type="submit" id="form-plataforma-submit">Guardar</button>
-                    </div>
-
-                    <div class="control column is-narrow is-hidden" id="form-plataforma-cancelar-container">
-                    <button class="button is-light" type="button" onclick="resetFormulario()">Cancelar</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <br>
-        <div class="is-flex is-justify-content-center">
-            <table class="table" style="width: 60%;">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Editar</th>
-                        <th>Borrar</th>
-                    </tr>
-                </thead>  
-                <tbody id="plataformas-table-body">
-                </tbody>
-            </table>
-        </div>
+  </div>
+  <div class="card fade-in" style="width: 80%; margin: auto; margin-top: 2rem;">
+    <div class="card-content">
+      <div class="is-flex is-justify-content-center">
+        <form id="plataforma-form" onsubmit="event.preventDefault(); agregarPlataforma();">
+          <input type="hidden" id="form-plataforma-id" />
+          <div class="field columns">
+            <label class="label column" id="form-plataforma-label">Nombre de la plataforma</label>
+            <div class="control column is-half">
+              <input class="input" type="text" id="form-plataforma-nombre" name="nombre" placeholder="Ej: PlayStation 5" required />
+            </div>
+            <div class="control column">
+              <button class="button is-primary" type="submit" id="form-plataforma-submit">Guardar</button>
+            </div>
+            <div class="control column is-narrow is-hidden" id="form-plataforma-cancelar-container">
+              <button class="button is-light" type="button" onclick="resetFormulario()">Cancelar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <hr>
+      <div class="is-flex is-justify-content-center">
+        <table class="table is-striped is-hoverable is-fullwidth fade-in" style="width: 80%;">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Editar</th>
+              <th>Borrar</th>
+            </tr>
+          </thead>
+          <tbody id="plataformas-table-body"></tbody>
+        </table>
+      </div>
     </div>
+  </div>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+      </p>
+    </div>
+  </footer>
+  <script src="./src/navbar.js"></script>
+  <script>
+    const plataformasBackendUrl = "http://localhost:3000/api/v1/plataformas";
 
-    <script src="./src/navbar.js"></script>
-    <script>
-        const plataformasBackendUrl = "http://localhost:3000/api/v1/plataformas";
+    function cargarPlataformas() {
+      let tbody = document.getElementById("plataformas-table-body");
+      tbody.innerHTML = "";
 
-        function cargarPlataformas() {
-            let plataformasTableBody = document.getElementById("plataformas-table-body");
-            plataformasTableBody.innerHTML = "";
+      fetch(plataformasBackendUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('Error al cargar plataformas');
+          return response.json();
+        })
+        .then(data => {
+          data.forEach(p => {
+            let row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${p.nombre}</td>
+              <td><button class="button is-info is-small" onClick="editarPlataforma(${p.id}, '${p.nombre}')"><i class="fas fa-edit"></i></button></td>
+              <td><button class="button is-danger is-small" onClick="confirmDelete(${p.id}, '${p.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+            `;
+            tbody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showErrorNotification(error.message);
+        });
+    }
 
-            try {
-                fetch(plataformasBackendUrl).then(response => {
-                    console.log(response);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                }).then(data => {
-                    console.log(data);
-                    data.forEach(plataforma => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${plataforma.nombre}</td>
-                            <td><button class="button is-info" onClick="editarPlataforma(${plataforma.id}, '${plataforma.nombre}')">Editar</button></td>
-                            <td><button class="button is-danger" onClick="confirmDelete(${plataforma.id}, '${plataforma.nombre}')">Borrar</button></td>
-                        `;
-                        plataformasTableBody.appendChild(row);
-                    });
-                });
-            } catch (error) {
-                console.error('Error fetching plataformas:', error);
-            }
+    function agregarPlataforma() {
+      const nombre = document.getElementById("form-plataforma-nombre").value;
+      const id = document.getElementById("form-plataforma-id").value;
+
+      if (!nombre.trim()) {
+        showErrorNotification("El nombre no puede estar vacío.");
+        return;
+      }
+
+      const metodo = id ? 'PUT' : 'POST';
+      const url = id ? `${plataformasBackendUrl}/${id}` : plataformasBackendUrl;
+
+      fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(error => {
+            throw new Error(error.message || 'Error al guardar la plataforma');
+          });
         }
-        
-        function agregarPlataforma() {
-            const nombre = document.getElementById("form-plataforma-nombre").value;
-            const id = document.getElementById("form-plataforma-id").value;
-
-            if (!nombre.trim()) {
-                showErrorNotification("El nombre no puede estar vacío.");
-                return;
-            }
-
-            const metodo = id ? 'PUT' : 'POST';
-            const url = id ? `${plataformasBackendUrl}/${id}` : plataformasBackendUrl;
-
-            fetch(url, {
-                method: metodo,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(error => {
-                        throw new Error(error.message || 'Error al guardar la plataforma');
-                    });
-                }
-                return response.json();
-            }).then(data => {
-                console.log('Plataforma agregada:', data);
-                showInfoNotification("Plataforma agregada correctamente");
-                resetFormulario();
-                cargarPlataformas();
-            }).catch(error => {
-                console.error('Error agregando plataforma:', error);
-                showErrorNotification(error.message);
-            });
-        }
-
-        function deletePlataforma(id) {
-            console.log(`Borrando plataforma con id: ${id}`);
-            fetch(`${plataformasBackendUrl}/${id}`, {method: 'DELETE'})
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(error => {
-                        throw new Error(error.message || 'Error al eliminar el ítem');
-                    });
-                }
-                return response.json();
-            }).then(data => {
-                console.log('Plataforma borrada:', data);
-                showInfoNotification("Plataforma borrada correctamente");
-                resetFormulario();
-                cargarPlataformas();
-            }).catch(error => {
-                console.error('Error borrando plataforma:', error);
-                showErrorNotification(error.message);
-            });
-            
-        }
-
-        function editarPlataforma(id, nombre) {
-            document.getElementById("form-plataforma-id").value = id;
-            document.getElementById("form-plataforma-nombre").value = nombre;
-
-            document.getElementById("form-plataforma-label").textContent = "Editar plataforma";
-            document.getElementById("form-plataforma-submit").textContent = "Actualizar";
-            document.getElementById("form-plataforma-cancelar-container").classList.remove("is-hidden");
-            
-            document.getElementById("plataforma-form").scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function confirmDelete(id, nombre) {
-            if (confirm(`¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`)) {
-                deletePlataforma(id);
-            }
-        }
-
-        function resetFormulario() {
-            document.getElementById("form-plataforma-id").value = "";
-            document.getElementById("form-plataforma-nombre").value = "";
-
-            document.getElementById("form-plataforma-label").textContent = "Nombre de la plataforma";
-            document.getElementById("form-plataforma-submit").textContent = "Guardar";
-            document.getElementById("form-plataforma-cancelar-container").classList.add("is-hidden");
-        }
-
-        function showInfoNotification(message) {
-            closeNotification('notification-container-error');
-            const container = document.getElementById('notification-container-info');
-            const msg = document.getElementById('notification-message-info');
-            msg.textContent = message;
-            container.classList.remove('is-hidden');
-            closeNotification('notification-container-error');
-        }
-
-        function showErrorNotification(message) {
-            closeNotification('notification-container-info');
-            const container = document.getElementById('notification-container-error');
-            const msg = document.getElementById('notification-message-error');
-            msg.textContent = message;
-            container.classList.remove('is-hidden');
-        }
-
-        function closeNotification(notificationId) {
-            const container = document.getElementById(notificationId);
-            container.classList.add('is-hidden');
-        }
-
+        return response.json();
+      })
+      .then(() => {
+        showInfoNotification("Plataforma guardada correctamente");
+        resetFormulario();
         cargarPlataformas();
-    </script>
+      })
+      .catch(error => {
+        showErrorNotification(error.message);
+      });
+    }
+
+    function deletePlataforma(id) {
+      fetch(`${plataformasBackendUrl}/${id}`, { method: 'DELETE' })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(error => {
+              throw new Error(error.message || 'Error al eliminar la plataforma');
+            });
+          }
+          return response.json();
+        })
+        .then(() => {
+          showInfoNotification("Plataforma eliminada correctamente");
+          resetFormulario();
+          cargarPlataformas();
+        })
+        .catch(error => {
+          showErrorNotification(error.message);
+        });
+    }
+
+    function editarPlataforma(id, nombre) {
+      document.getElementById("form-plataforma-id").value = id;
+      document.getElementById("form-plataforma-nombre").value = nombre;
+      document.getElementById("form-plataforma-label").textContent = "Editar plataforma";
+      document.getElementById("form-plataforma-submit").textContent = "Actualizar";
+      document.getElementById("form-plataforma-cancelar-container").classList.remove("is-hidden");
+      document.getElementById("plataforma-form").scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function confirmDelete(id, nombre) {
+      if (confirm(`¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`)) {
+        deletePlataforma(id);
+      }
+    }
+
+    function resetFormulario() {
+      document.getElementById("form-plataforma-id").value = "";
+      document.getElementById("form-plataforma-nombre").value = "";
+      document.getElementById("form-plataforma-label").textContent = "Nombre de la plataforma";
+      document.getElementById("form-plataforma-submit").textContent = "Guardar";
+      document.getElementById("form-plataforma-cancelar-container").classList.add("is-hidden");
+    }
+
+    function showInfoNotification(message) {
+      closeNotification('notification-container-error');
+      const container = document.getElementById('notification-container-info');
+      document.getElementById('notification-message-info').textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function showErrorNotification(message) {
+      closeNotification('notification-container-info');
+      const container = document.getElementById('notification-container-error');
+      document.getElementById('notification-message-error').textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function closeNotification(id) {
+      document.getElementById(id).classList.add('is-hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', cargarPlataformas);
+  </script>
 </body>
 </html>
