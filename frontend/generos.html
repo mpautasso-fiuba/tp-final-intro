@@ -1,201 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Géneros</title>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <meta charset="UTF-8" />
+  <title>Géneros</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .fade-in {
+      animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="navbar-container"></div>
-
+  <div id="navbar-container"></div>
+  <section class="hero is-primary is-bold fade-in">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Gestión de Géneros</h1>
+        <h2 class="subtitle">Agregá, editá o eliminá géneros disponibles 🎮</h2>
+      </div>
+    </div>
+  </section>
+  <div class="container fade-in" style="margin-top: 2rem;">
     <div id="notification-container-error" class="notification is-danger is-hidden">
-        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
-        <span id="notification-message-error"></span>
+      <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+      <span id="notification-message-error"></span>
     </div>
-
     <div id="notification-container-info" class="notification is-info is-hidden">
-        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
-        <span id="notification-message-info"></span>
+      <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+      <span id="notification-message-info"></span>
     </div>
-    <br>
-    <div class="container">
-        <h1 class="title  has-text-centered">Géneros de videojuegos</h1>
-        <br>
-        <div class="is-flex is-justify-content-center"> 
-            <form id="genero-form" onsubmit="event.preventDefault(); agregarGenero();">
-                <input type="hidden" id="form-genero-id" />
-
-                <div class="field columns">
-                    <label class="label column" id="form-genero-label">Nombre del género</label>
-                    
-                    <div class="control column is-half">
-                    <input class="input" type="text" id="form-genero-nombre" name="nombre" placeholder="Ej: Acción" required />
-                    </div>
-                    
-                    <div class="control column">
-                    <button class="button is-primary" type="submit" id="form-genero-submit">Guardar</button>
-                    </div>
-
-                    <div class="control column is-narrow is-hidden" id="form-genero-cancelar-container">
-                    <button class="button is-light" type="button" onclick="resetFormulario()">Cancelar</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <br>
-        <div class="is-flex is-justify-content-center">
-            <table class="table" style="width: 60%;">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Editar</th>
-                        <th>Borrar</th>
-                    </tr>
-                </thead>  
-                <tbody id="generos-table-body">
-                </tbody>
-            </table>
-        </div>
+  </div>
+  <div class="card fade-in" style="width: 80%; margin: auto; margin-top: 2rem;">
+    <div class="card-content">
+      <div class="is-flex is-justify-content-center"> 
+        <form id="genero-form" onsubmit="event.preventDefault(); agregarGenero();">
+          <input type="hidden" id="form-genero-id" />
+          <div class="field columns">
+            <label class="label column" id="form-genero-label">Nombre del género</label>
+            <div class="control column is-half">
+              <input class="input" type="text" id="form-genero-nombre" name="nombre" placeholder="Ej: Acción" required />
+            </div>
+            <div class="control column">
+              <button class="button is-primary" type="submit" id="form-genero-submit">Guardar</button>
+            </div>
+            <div class="control column is-narrow is-hidden" id="form-genero-cancelar-container">
+              <button class="button is-light" type="button" onclick="resetFormulario()">Cancelar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <hr>
+      <div class="is-flex is-justify-content-center">
+        <table class="table is-striped is-hoverable is-fullwidth fade-in" style="width: 80%;">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Editar</th>
+              <th>Borrar</th>
+            </tr>
+          </thead>
+          <tbody id="generos-table-body"></tbody>
+        </table>
+      </div>
     </div>
-
-    <script src="./src/navbar.js"></script>
-    <script>
-        const generosBackendUrl = "http://localhost:3000/api/v1/generos";
-
-        function cargarGeneros() {
-            let generosTableBody = document.getElementById("generos-table-body");
-            generosTableBody.innerHTML = "";
-
-            try {
-                fetch(generosBackendUrl).then(response => {
-                    console.log(response);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                }).then(data => {
-                    console.log(data);
-                    data.forEach(genero => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${genero.nombre}</td>
-                            <td><button class="button is-info" onClick="editarGenero(${genero.id}, '${genero.nombre}')">Editar</button></td>
-                            <td><button class="button is-danger" onClick="confirmDelete(${genero.id}, '${genero.nombre}')">Borrar</button></td>
-                        `;
-                        generosTableBody.appendChild(row);
-                    });
-                });
-            } catch (error) {
-                console.error('Error fetching generos:', error);
-            }
+  </div>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+      </p>
+    </div>
+  </footer>
+  <script src="./src/navbar.js"></script>
+  <script>
+    const generosBackendUrl = "http://localhost:3000/api/v1/generos";
+    function cargarGeneros() {
+      let generosTableBody = document.getElementById("generos-table-body");
+      generosTableBody.innerHTML = "";
+      fetch(generosBackendUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('Error al cargar géneros');
+          return response.json();
+        })
+        .then(data => {
+          data.forEach(genero => {
+            let row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${genero.nombre}</td>
+              <td><button class="button is-info is-small" onClick="editarGenero(${genero.id}, '${genero.nombre}')"><i class="fas fa-edit"></i></button></td>
+              <td><button class="button is-danger is-small" onClick="confirmDelete(${genero.id}, '${genero.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+            `;
+            generosTableBody.appendChild(row);
+          });
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showErrorNotification(error.message);
+        });
+    }
+    function agregarGenero() {
+      const nombre = document.getElementById("form-genero-nombre").value;
+      const id = document.getElementById("form-genero-id").value;
+      if (!nombre.trim()) {
+        showErrorNotification("El nombre no puede estar vacío.");
+        return;
+      }
+      const metodo = id ? 'PUT' : 'POST';
+      const url = id ? `${generosBackendUrl}/${id}` : generosBackendUrl;
+      fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(error => {
+            throw new Error(error.message || 'Error al guardar el género');
+          });
         }
-        
-        function agregarGenero() {
-            const nombre = document.getElementById("form-genero-nombre").value;
-            const id = document.getElementById("form-genero-id").value;
-
-            if (!nombre.trim()) {
-                showErrorNotification("El nombre no puede estar vacío.");
-                return;
-            }
-
-            const metodo = id ? 'PUT' : 'POST';
-            const url = id ? `${generosBackendUrl}/${id}` : generosBackendUrl;
-
-            fetch(url, {
-                method: metodo,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(error => {
-                        throw new Error(error.message || 'Error al guardar el género');
-                    });
-                }
-                return response.json();
-            }).then(data => {
-                console.log('Género agregado:', data);
-                showInfoNotification("Género agregado correctamente");
-                resetFormulario();
-                cargarGeneros();
-            }).catch(error => {
-                console.error('Error agregando género:', error);
-                showErrorNotification(error.message);
-            });
-        }
-
-        function deleteGenero(id) {
-            console.log(`Borrando género con id: ${id}`);
-            fetch(`${generosBackendUrl}/${id}`, {method: 'DELETE'})
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(error => {
-                        throw new Error(error.message || 'Error al eliminar el ítem');
-                    });
-                }
-                return response.json();
-            }).then(data => {
-                console.log('Género borrado:', data);
-                showInfoNotification("Género borrado correctamente");
-                resetFormulario();
-                cargarGeneros();
-            }).catch(error => {
-                console.error('Error borrando género:', error);
-                showErrorNotification(error.message);
-            });
-            
-        }
-
-        function editarGenero(id, nombre) {
-            document.getElementById("form-genero-id").value = id;
-            document.getElementById("form-genero-nombre").value = nombre;
-
-            document.getElementById("form-genero-label").textContent = "Editar género";
-            document.getElementById("form-genero-submit").textContent = "Actualizar";
-            document.getElementById("form-genero-cancelar-container").classList.remove("is-hidden");
-
-            document.getElementById("genero-form").scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function confirmDelete(id, nombre) {
-            if (confirm(`¿Estás seguro que deseas borrar el género "${nombre}"? Todos los juegos dejarán de tener este género.`)) {
-                deleteGenero(id);
-            }
-        }
-
-        function resetFormulario() {
-            document.getElementById("form-genero-id").value = "";
-            document.getElementById("form-genero-nombre").value = "";
-
-            document.getElementById("form-genero-label").textContent = "Nombre del género";
-            document.getElementById("form-genero-submit").textContent = "Guardar";
-            document.getElementById("form-genero-cancelar-container").classList.add("is-hidden");
-        }
-
-        function showInfoNotification(message) {
-            closeNotification('notification-container-error');
-            const container = document.getElementById('notification-container-info');
-            const msg = document.getElementById('notification-message-info');
-            msg.textContent = message;
-            container.classList.remove('is-hidden');
-            closeNotification('notification-container-error');
-        }
-
-        function showErrorNotification(message) {
-            closeNotification('notification-container-info');
-            const container = document.getElementById('notification-container-error');
-            const msg = document.getElementById('notification-message-error');
-            msg.textContent = message;
-            container.classList.remove('is-hidden');
-        }
-
-        function closeNotification(notificationId) {
-            const container = document.getElementById(notificationId);
-            container.classList.add('is-hidden');
-        }
-
+        return response.json();
+      })
+      .then(data => {
+        showInfoNotification("Género guardado correctamente");
+        resetFormulario();
         cargarGeneros();
-    </script>
+      })
+      .catch(error => {
+        showErrorNotification(error.message);
+      });
+    }
+    function deleteGenero(id) {
+      fetch(`${generosBackendUrl}/${id}`, { method: 'DELETE' })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(error => {
+              throw new Error(error.message || 'Error al eliminar el género');
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          showInfoNotification("Género eliminado correctamente");
+          resetFormulario();
+          cargarGeneros();
+        })
+        .catch(error => {
+          showErrorNotification(error.message);
+        });
+    }
+    function editarGenero(id, nombre) {
+      document.getElementById("form-genero-id").value = id;
+      document.getElementById("form-genero-nombre").value = nombre;
+      document.getElementById("form-genero-label").textContent = "Editar género";
+      document.getElementById("form-genero-submit").textContent = "Actualizar";
+      document.getElementById("form-genero-cancelar-container").classList.remove("is-hidden");
+      document.getElementById("genero-form").scrollIntoView({ behavior: 'smooth' });
+    }
+    function confirmDelete(id, nombre) {
+      if (confirm(`¿Estás seguro que deseas borrar el género "${nombre}"? Todos los juegos dejarán de tener este género.`)) {
+        deleteGenero(id);
+      }
+    }
+    function resetFormulario() {
+      document.getElementById("form-genero-id").value = "";
+      document.getElementById("form-genero-nombre").value = "";
+      document.getElementById("form-genero-label").textContent = "Nombre del género";
+      document.getElementById("form-genero-submit").textContent = "Guardar";
+      document.getElementById("form-genero-cancelar-container").classList.add("is-hidden");
+    }
+    function showInfoNotification(message) {
+      closeNotification('notification-container-error');
+      const container = document.getElementById('notification-container-info');
+      const msg = document.getElementById('notification-message-info');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+    function showErrorNotification(message) {
+      closeNotification('notification-container-info');
+      const container = document.getElementById('notification-container-error');
+      const msg = document.getElementById('notification-message-error');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+    function closeNotification(id) {
+      document.getElementById(id).classList.add('is-hidden');
+    }
+    window.addEventListener('DOMContentLoaded', cargarGeneros);
+  </script>
 </body>
 </html>
