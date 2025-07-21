@@ -47,7 +47,6 @@ async function updateComentario(id, data) {
   const {
     usuario,
     texto,
-    fecha_publicacion,
     calificacion,
     horas_jugadas,
     terminado
@@ -57,13 +56,12 @@ async function updateComentario(id, data) {
     `UPDATE comentarios
      SET usuario = $1,
          texto = $2,
-         fecha_publicacion = $3,
-         calificacion = $4,
-         horas_jugadas = $5,
-         terminado = $6
-     WHERE id = $7
+         calificacion = $3,
+         horas_jugadas = $4,
+         terminado = $5
+     WHERE id = $6
      RETURNING *;`,
-    [usuario, texto, fecha_publicacion, calificacion, horas_jugadas, terminado, id]
+    [usuario, texto, calificacion, horas_jugadas, terminado, id]
   );
 
   return result.rows[0];
