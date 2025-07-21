@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Agregar Comentario</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+      .fade-in {
+      animation: fadeIn 0.8s ease-in;
+      }
+
+      @keyframes fadeIn {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+      }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <section class="section fade-in">
+    <div class="container">
+      <h1 class="title has-text-centered">Agregar Comentario</h1>
+      <div class="box">
+        <form id="comentario-form" onsubmit="event.preventDefault(); agregarComentario();">
+          <input type="hidden" id="form-id" />
+          <div class="columns is-multiline">
+            <div class="column is-half">
+              <label class="label">Usuario</label>
+              <input class="input" type="text" id="form-usuario" required />
+            </div>
+            <div class="column is-half">
+              <label class="label">Nombre del juego</label>
+              <div class="select is-fullwidth">
+                <select id="juegos-select" required>
+                  <option value="">Seleccionar</option>
+                </select>
+              </div>
+            </div>
+            <div class="column is-full">
+              <label class="label">Texto</label>
+              <textarea class="textarea" id="form-texto" required></textarea>
+            </div>
+            <div class="column is-half">
+              <label class="label">Fecha de publicación</label>
+              <input class="input" type="date" id="form-fecha_publicacion" />
+            </div>
+            <div class="column is-half">
+              <label class="label">Calificación (0-10)</label>
+              <input class="input" type="number" id="form-calificacion" min="0" max="10" required />
+            </div>
+            <div class="column is-half">
+              <label class="label">Horas jugadas</label>
+              <input class="input" type="number" id="form-horas_jugadas" />
+            </div>
+            <div class="column is-half">
+              <label class="label">¿Terminado?</label>
+              <div class="select is-fullwidth">
+                <select id="form-terminado" required>
+                  <option value="">Seleccionar</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+            <div class="column is-full">
+              <button class="button is-primary" id="form-submit" type="submit">Guardar</button>
+              <a class="button is-light" href="comentarios.html">Cancelar</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+ <script src="./src/navbar.js"></script>
+<script>
+  const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+  const juegosSelect = document.getElementById("juegos-select");
+  const params = new URLSearchParams(window.location.search);
+  const comentarioId = params.get("id");
+
+  async function cargar_formulario() {
+    const response = await fetch("http://localhost:3000/api/v1/juegos");
+    const juegos = await response.json();
+    juegos.forEach(juego => {
+      const option = document.createElement("option");
+      option.textContent = juego.nombre;
+      option.value = juego.id;
+      juegosSelect.appendChild(option);
+    });
+    if (comentarioId) {
+      document.querySelector("h1.title").textContent = "Editar Comentario";
+      document.getElementById("form-submit").textContent = "Actualizar";
+      const res = await fetch(`${comentariosUrl}/${comentarioId}`);
+      if (!res.ok) {
+        alert("No se pudo cargar el comentario.");
+        return;
+      }
+      const comentario = await res.json();
+      document.getElementById("form-id").value = comentario.id;
+      document.getElementById("form-usuario").value = comentario.usuario;
+      document.getElementById("juegos-select").value = comentario.juego_id;
+      document.getElementById("form-texto").value = comentario.texto;
+      document.getElementById("form-fecha_publicacion").value = comentario.fecha_publicacion?.split("T")[0] || "";
+      document.getElementById("form-calificacion").value = comentario.calificacion;
+      document.getElementById("form-horas_jugadas").value = comentario.horas_jugadas ?? "";
+      document.getElementById("form-terminado").value = comentario.terminado ? "true" : "false";
+      document.getElementById("form-fecha_publicacion").disabled = true;
+
+      
+    }
+  }
+  function agregarComentario() {
+    const comentario = {
+      usuario: document.getElementById("form-usuario").value.trim(),
+      juego_id: parseInt(document.getElementById("juegos-select").value),
+      texto: document.getElementById("form-texto").value.trim(),
+      fecha_publicacion: document.getElementById("form-fecha_publicacion").value || null,
+      calificacion: parseInt(document.getElementById("form-calificacion").value),
+      horas_jugadas: document.getElementById("form-horas_jugadas").value ? parseInt(document.getElementById("form-horas_jugadas").value) : null,
+      terminado: document.getElementById("form-terminado").value === "true"
+    };
+
+    const url = comentarioId ? `${comentariosUrl}/${comentarioId}` : comentariosUrl;
+    const method = comentarioId ? "PUT" : "POST";
+
+    fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(comentario)
+    })
+    .then(res => {
+      if (!res.ok) return res.text().then(text => { throw new Error(text); });
+      return res.json();
+    })
+    .then(() => {
+      alert(comentarioId ? "Comentario actualizado correctamente" : "Comentario agregado correctamente");
+      window.location.href = "comentarios.html";
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error al guardar comentario: " + err.message);
+    });
+  }
+  cargar_formulario();
+</script>
+</body>
+</html>
