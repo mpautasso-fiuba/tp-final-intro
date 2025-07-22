@@ -68,9 +68,10 @@
       </p>
     </div>
   </footer>
+  <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
-    const desarrolladorasUrl = "http://localhost:3000/api/v1/desarrolladoras";
+    const desarrolladorasUrl = window._env_.API_URL + "/desarrolladoras";
 
     function cargarDesarrolladoras() {
       fetch(desarrolladorasUrl)

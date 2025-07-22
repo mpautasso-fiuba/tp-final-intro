@@ -102,10 +102,10 @@
       </p>
     </div>
   </footer>
-
+  <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
-    const apiUrl = 'http://localhost:3000/api/v1';
+    const apiUrl = window._env_.API_URL;
     async function cargarEstadisticas() {
       try {
         fetch(`${apiUrl}/juegos`)

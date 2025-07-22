@@ -79,16 +79,16 @@
     </div>
   </section>
 
-
+  <script src="./src/env.js"></script>
  <script src="./src/navbar.js"></script>
 <script>
-  const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+  const comentariosUrl = window._env_.API_URL + "/comentarios";
   const juegosSelect = document.getElementById("juegos-select");
   const params = new URLSearchParams(window.location.search);
   const comentarioId = params.get("id");
 
   async function cargar_formulario() {
-    const response = await fetch("http://localhost:3000/api/v1/juegos");
+    const response = await fetch(window._env_.API_URL + "/juegos");
     const juegos = await response.json();
     juegos.forEach(juego => {
       const option = document.createElement("option");

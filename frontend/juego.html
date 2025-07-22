@@ -50,13 +50,14 @@
     </div>
 
 
+    <script src="./src/env.js"></script>
     <script src="./src/navbar.js"></script>
     <script>
         const id = new URLSearchParams(window.location.search).get('id');
         console.log(`Cargando juego con id: ${id}`);
 
-        const juegoBackendUrl = "http://localhost:3000/api/v1/juegos/" + id;
-        const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+        const juegoBackendUrl = window._env_.API_URL + "/juegos/" + id;
+        const comentariosUrl = window._env_.API_URL + "/comentarios";
  
         let juegoTitleBody = document.getElementById("juego-title");
         juegoTitleBody.innerHTML = "";

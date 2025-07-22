@@ -67,10 +67,11 @@
     </div>
   </footer>
 
+  <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
 
   <script>
-    const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+    const comentariosUrl = window._env_.API_URL + "/comentarios";
 
     async function mostrarComentarios(data) {
       const contenedor = document.getElementById("comentarios-list");

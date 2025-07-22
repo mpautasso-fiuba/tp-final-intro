@@ -87,10 +87,11 @@
         <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
       </p>
     </div>
-  </footer>
+  </footer>    
+  <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
-    const plataformasBackendUrl = "http://localhost:3000/api/v1/plataformas";
+    const plataformasBackendUrl = window._env_.API_URL + "/plataformas";
 
     function cargarPlataformas() {
       let tbody = document.getElementById("plataformas-table-body");

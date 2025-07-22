@@ -132,7 +132,7 @@
       </form>
     </div>
   </section>
-
+    <script src="./src/env.js"></script>
     <script src="./src/navbar.js"></script>
   <script>
     const id = new URLSearchParams(window.location.search).get("id");
@@ -145,10 +145,10 @@
     const container_checkbox_plataformas = document.getElementById("checkboxes-plataformas");
     const container_checkbox_generos = document.getElementById("checkboxes-generos");
 
-    const juegosBackendUrl = "http://localhost:3000/api/v1/juegos";
-    const desarrolladorasBackendUrl = "http://localhost:3000/api/v1/desarrolladoras";
-    const generosBackendUrl = "http://localhost:3000/api/v1/generos";
-    const plataformasBackendUrl = "http://localhost:3000/api/v1/plataformas";
+    const juegosBackendUrl = window._env_.API_URL + "/juegos";
+    const desarrolladorasBackendUrl = window._env_.API_URL + "/desarrolladoras";
+    const generosBackendUrl = window._env_.API_URL + "/generos";
+    const plataformasBackendUrl = window._env_.API_URL + "/plataformas";
 
     function setDataIfItsAJuegoUpdate (id) {
       formTitle.textContent = "Editar juego";
