@@ -59,64 +59,55 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-    const desarrolladoraUrl = `${window._env_.API_URL}/desarrolladoras/${id}`;
-    const juegosUrl = `${window._env_.API_URL}/juegos`;
+const desarrolladoraUrl = `${window._env_.API_URL}/desarrolladoras/${id}/details`;
 
-    let desarrolladoraData;
+  fetch(desarrolladoraUrl)
+    .then(res => {
+      if (!res.ok) throw new Error("No se pudo cargar la desarrolladora.");
+      return res.json();
+    })
+    .then(data => {
+      console.log(data)
+      document.getElementById("nombre-dev").textContent = data.desarrolladora_nombre;
+      document.getElementById("imagen-dev").src = data.imagen_url || "";
+      document.getElementById("fundacion-dev").textContent = new Date(data.fecha_fundacion).toLocaleDateString('es-AR');
+      document.getElementById("pais-dev").textContent = data.pais_sede_central;
+      document.getElementById("presidente-dev").textContent = data.presidente_actual;
+      document.getElementById("editar-btn").href = `desarrolladora-form.html?id=${data.desarrolladora_id}`;
+      document.getElementById("borrar-btn").addEventListener("click", () => borrar(data.desarrolladora_id, data.desarrolladora_nombre));
 
-    fetch(desarrolladoraUrl)
-      .then(res => {
-        if (!res.ok) throw new Error("No se pudo cargar la desarrolladora.");
-        return res.json();
-      })
-      .then(data => {
-        desarrolladoraData = data;
-
-        document.getElementById("nombre-dev").textContent = data.nombre;
-        document.getElementById("imagen-dev").src = data.imagen_url || "";
-        document.getElementById("fundacion-dev").textContent = new Date(data.fecha_fundacion).toLocaleDateString('es-AR');
-        document.getElementById("pais-dev").textContent = data.pais_sede_central;
-        document.getElementById("presidente-dev").textContent = data.presidente_actual;
-        document.getElementById("editar-btn").href = `desarrolladora-form.html?id=${data.id}`;
-
-        document.getElementById("borrar-btn").addEventListener("click", () => borrar(data.id, data.nombre));
-
-        return fetch(juegosUrl);
-      })
-      .then(res => {
-        if (!res.ok) throw new Error("No se pudieron cargar los juegos.");
-        return res.json();
-      })
-      .then(juegos => {
-        const container = document.getElementById("juegos-lista");
-        const juegosDeDesarrolladora = juegos.filter(j => j.desarrolladora === desarrolladoraData.nombre);
-
-        if (juegosDeDesarrolladora.length === 0) {
-          container.innerHTML = "<p>No hay juegos registrados para esta desarrolladora.</p>";
-        } else {
-          juegosDeDesarrolladora.forEach(j => {
-            container.innerHTML += `
-              <div class="box fade-in">
-                <div class="columns is-vcentered">
-                  <div class="column is-narrow">
-                    ${j.imagen_url ? `<img src="${j.imagen_url}" width="100">` : ""}
-                  </div>
-                  <div class="column">
-                    <p><strong>${j.nombre}</strong></p>
-                    <p>Puntaje Metacritic: ${j.puntaje_metacritic}</p>
-                    <p>PEGI: ${j.pegi}</p>
-                    <p>Fecha de publicación: ${new Date(j.fecha_publicacion).toLocaleDateString('es-AR')}</p>
+      const container = document.getElementById("juegos-lista");
+      if (data.juegos === null) {
+        container.innerHTML = "<p>No hay juegos registrados para esta desarrolladora.</p>";
+      } else {
+        data.juegos.forEach(j => {
+          container.innerHTML += `
+            <div class="box fade-in">
+              <div class="columns is-vcentered">
+                <div class="column is-narrow">
+                  ${j.imagen_url ? `<img src="${j.imagen_url}" width="100">` : ""}
+                </div>
+                <div class="column">
+                  <p><strong>${j.nombre}</strong></p>
+                  <p>Puntaje Metacritic: ${j.puntaje_metacritic}</p>
+                  <p>PEGI: ${j.pegi}</p>
+                  <p>Fecha de publicación: ${new Date(j.fecha_publicacion).toLocaleDateString('es-AR')}</p>
+                  <div class="mt-3">
+                    <a href="juego.html?id=${j.id}" class="button is-link is-small">
+                      <i class="fas fa-eye"></i>&nbsp; Ver página
+                    </a>
                   </div>
                 </div>
               </div>
-            `;
-          });
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        showErrorNotification("Error al cargar los datos.");
-      });
+            </div>
+          `;
+        });
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showErrorNotification("Error al cargar los datos.");
+    });
 
     function borrar(id, nombre) {
       if (confirm(`¿Eliminar desarrolladora "${nombre}"?`)) {
