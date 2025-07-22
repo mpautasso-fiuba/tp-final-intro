@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle Desarrolladora</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div id="notification-container-error" class="notification is-danger is-hidden">
+    <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+    <span id="notification-message-error"></span>
+  </div>
+  <div id="notification-container-info" class="notification is-info is-hidden">
+    <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+    <span id="notification-message-info"></span>
+  </div>
+
+  <section class="section fade-in">
+    <div class="container">
+      <h1 class="title" id="nombre-dev"></h1>
+
+      <div class="columns is-vcentered mb-4">
+        <div class="column is-narrow">
+          <figure class="image is-128x128">
+            <img id="imagen-dev" src="" alt="Imagen desarrolladora">
+          </figure>
+        </div>
+        <div class="column">
+          <p><strong>Fundación:</strong> <span id="fundacion-dev"></span></p>
+          <p><strong>País:</strong> <span id="pais-dev"></span></p>
+          <p><strong>Presidente:</strong> <span id="presidente-dev"></span></p>
+          <div class="buttons mt-3">
+            <a id="editar-btn" class="button is-info"><i class="fas fa-edit"></i> &nbsp;Editar</a>
+            <button class="button is-danger" id="borrar-btn"><i class="fas fa-trash"></i> &nbsp;Borrar</button>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <h2 class="subtitle">Juegos desarrollados</h2>
+      <div id="juegos-lista"></div>
+    </div>
+  </section>
+
+  <script src="./src/env.js"></script>
+  <script src="./src/navbar.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const desarrolladoraUrl = `${window._env_.API_URL}/desarrolladoras/${id}`;
+    const juegosUrl = `${window._env_.API_URL}/juegos`;
+
+    let desarrolladoraData;
+
+    fetch(desarrolladoraUrl)
+      .then(res => {
+        if (!res.ok) throw new Error("No se pudo cargar la desarrolladora.");
+        return res.json();
+      })
+      .then(data => {
+        desarrolladoraData = data;
+
+        document.getElementById("nombre-dev").textContent = data.nombre;
+        document.getElementById("imagen-dev").src = data.imagen_url || "";
+        document.getElementById("fundacion-dev").textContent = new Date(data.fecha_fundacion).toLocaleDateString('es-AR');
+        document.getElementById("pais-dev").textContent = data.pais_sede_central;
+        document.getElementById("presidente-dev").textContent = data.presidente_actual;
+        document.getElementById("editar-btn").href = `desarrolladora-form.html?id=${data.id}`;
+
+        document.getElementById("borrar-btn").addEventListener("click", () => borrar(data.id, data.nombre));
+
+        return fetch(juegosUrl);
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("No se pudieron cargar los juegos.");
+        return res.json();
+      })
+      .then(juegos => {
+        const container = document.getElementById("juegos-lista");
+        const juegosDeDesarrolladora = juegos.filter(j => j.desarrolladora === desarrolladoraData.nombre);
+
+        if (juegosDeDesarrolladora.length === 0) {
+          container.innerHTML = "<p>No hay juegos registrados para esta desarrolladora.</p>";
+        } else {
+          juegosDeDesarrolladora.forEach(j => {
+            container.innerHTML += `
+              <div class="box fade-in">
+                <div class="columns is-vcentered">
+                  <div class="column is-narrow">
+                    ${j.imagen_url ? `<img src="${j.imagen_url}" width="100">` : ""}
+                  </div>
+                  <div class="column">
+                    <p><strong>${j.nombre}</strong></p>
+                    <p>Puntaje Metacritic: ${j.puntaje_metacritic}</p>
+                    <p>PEGI: ${j.pegi}</p>
+                    <p>Fecha de publicación: ${new Date(j.fecha_publicacion).toLocaleDateString('es-AR')}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showErrorNotification("Error al cargar los datos.");
+      });
+
+    function borrar(id, nombre) {
+      if (confirm(`¿Eliminar desarrolladora "${nombre}"?`)) {
+        fetch(`${window._env_.API_URL}/desarrolladoras/${id}`, { method: "DELETE" })
+          .then(res => {
+            if (!res.ok) throw new Error("No se pudo eliminar la desarrolladora.");
+            showInfoNotification("Desarrolladora eliminada.");
+            setTimeout(() => {
+              window.location.href = "desarrolladoras.html";
+            }, 1000);
+          })
+          .catch(err => {
+            console.error(err);
+            showErrorNotification("Error al eliminar la desarrolladora.");
+          });
+      }
+    }
+
+    function showInfoNotification(message) {
+      closeNotification('notification-container-error');
+      const container = document.getElementById('notification-container-info');
+      const msg = document.getElementById('notification-message-info');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function showErrorNotification(message) {
+      closeNotification('notification-container-info');
+      const container = document.getElementById('notification-container-error');
+      const msg = document.getElementById('notification-message-error');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function closeNotification(id) {
+      document.getElementById(id).classList.add("is-hidden");
+    }
+  </script>
+</body>
+</html>
