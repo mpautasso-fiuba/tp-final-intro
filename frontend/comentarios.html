@@ -41,12 +41,18 @@
       <button class="delete" onclick="closeNotification('notification-container-info')"></button>
       <span id="notification-message-info"></span>
     </div>
+
     <div class="has-text-centered mb-4 level-left">
-        <button class="button is-primary" onclick="window.location.href='comentario-form.html'">Agregar Comentario</button>
+      <button class="button is-primary" onclick="window.location.href='comentario-form.html'">Agregar Comentario</button>
     </div>
+
     <div class="field has-addons mb-5">
       <div class="control is-expanded">
-        <input class="input" type="number" id="input-filtro-juego" placeholder="Filtrar por ID de juego">
+        <div class="select is-fullwidth">
+          <select id="select-filtro-juego">
+            <option value="">Seleccionar juego...</option>
+          </select>
+        </div>
       </div>
       <div class="control">
         <button class="button is-link" onclick="filtrarPorJuego()">Filtrar</button>
@@ -55,6 +61,7 @@
         <button class="button is-light" onclick="cargarComentarios()">Ver todos</button>
       </div>
     </div>
+
     <div id="comentarios-list" class="columns is-multiline"></div>
     <hr />
   </div>
@@ -69,45 +76,64 @@
 
   <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
-
   <script>
     const comentariosUrl = window._env_.API_URL + "/comentarios";
+    const juegosUrl = window._env_.API_URL + "/juegos";
+
+    async function cargaJuegos() {
+      try {
+        const response = await fetch(juegosUrl);
+        const juegos = await response.json();
+        const select = document.getElementById("select-filtro-juego");
+
+        juegos.forEach(juego => {
+          const option = document.createElement("option");
+          option.textContent = juego.nombre;
+          option.value = juego.id;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        showErrorNotification("Error al cargar juegos");
+        console.error(err);
+      }
+    }
 
     async function mostrarComentarios(data) {
       const contenedor = document.getElementById("comentarios-list");
       contenedor.innerHTML = "";
 
       for (const c of data) {
+        const juego_nombre = c.juego_nombre || "Juego desconocido";
         const fecha_formateada = new Date(c.fecha_publicacion).toLocaleDateString('en-CA');
 
         const comentarioCard = document.createElement("div");
         comentarioCard.className = "column is-full";
         comentarioCard.innerHTML = `
         <div class="box">
-            <div class="media-content">
+          <div class="media-content">
             <div class="content">
-                <p>
+              <p>
                 <strong>${c.usuario}</strong>
-                <small>| Juego: ${c.juego_nombre}</small>
+                <small>| Juego: ${juego_nombre}</small>
                 <br/>
                 <span class="has-text-grey is-size-7">
-                    Fecha: ${fecha_formateada || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
+                  Fecha: ${fecha_formateada || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
                 </span>
                 <br/><br/>
                 <span>${c.texto}</span>
-                </p>
+              </p>
             </div>
             <div class="buttons mt-3">
-                <a class="button is-small is-info" href="comentario-form.html?id=${c.id}">
+              <a class="button is-small is-info" href="comentario-form.html?id=${c.id}">
                 <span class="icon"><i class="fas fa-edit"></i></span>
                 <span>Editar</span>
-                </a>
-                <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
+              </a>
+              <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
                 <span class="icon"><i class="fas fa-trash"></i></span>
                 <span>Borrar</span>
-                </button>
+              </button>
             </div>
-            </div>
+          </div>
         </div>
         `;
         contenedor.appendChild(comentarioCard);
@@ -115,9 +141,9 @@
     }
 
     function filtrarPorJuego() {
-      const juegoId = document.getElementById("input-filtro-juego").value;
+      const juegoId = document.getElementById("select-filtro-juego").value;
       if (!juegoId) {
-        showErrorNotification("Debe ingresar un ID de juego válido");
+        showErrorNotification("Debe seleccionar un juego");
         return;
       }
 
@@ -135,7 +161,7 @@
         .then(data => {
           document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
           mostrarComentarios(data);
-          showInfoNotification(`Se encontraron ${data.length} comentario(s) para el juego ID: ${juegoId}`);
+          showInfoNotification(`Se encontraron ${data.length} comentario(s) para el juego seleccionado`);
         })
         .catch(err => {
           console.error(err);
@@ -157,7 +183,7 @@
     function eliminarComentario(id) {
       fetch(`${comentariosUrl}/${id}`, { method: "DELETE" })
         .then(res => {
-          if (!res.ok) return res.text().then(text => { throw new Error(text) });
+          if (!res.ok) return res.text().then(text => { throw new Error(text); });
           return res.json();
         })
         .then(() => {
@@ -196,6 +222,7 @@
     }
 
     cargarComentarios();
+    cargaJuegos();
   </script>
 </body>
 </html>
