@@ -6,7 +6,8 @@ const {
     existsDesarrolladoraByNombre,
     addDesarrolladora,
     updateDesarrolladora,
-    deleteDesarrolladora
+    deleteDesarrolladora,
+    getDesarrolladoraWithDetails
 } = require("../repositories/desarolladoras_repository.js");
 
 app.use(express.json());
@@ -25,6 +26,20 @@ app.get("/:id", async(req, res) => {
   let desarrolladora_id = req.params.id;
   try{
     const desarrolladora = await getDesarrolladoraById(desarrolladora_id);
+    if(desarrolladora === undefined){
+      return res.status(404).json({ message: "Desarrolladora no encontrada" });
+    }
+    res.json(desarrolladora);
+  }
+  catch (error){
+    console.error("Error en la carga de desarrolladoras:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+app.get("/:id/details", async(req, res) => {
+  let desarrolladora_id = req.params.id;
+  try{
+    const desarrolladora = await getDesarrolladoraWithDetails(desarrolladora_id);
     if(desarrolladora === undefined){
       return res.status(404).json({ message: "Desarrolladora no encontrada" });
     }
