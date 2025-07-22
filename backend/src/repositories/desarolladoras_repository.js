@@ -73,9 +73,37 @@ async function deleteDesarrolladora(id) {
   const result = await dbClient.query('DELETE FROM desarrolladoras where id = $1',[id])
   return result.rows;
 }
+async function getDesarrolladoraWithDetails(id) {
+  const result = await dbClient.query(`  SELECT 
+    d.id AS desarrolladora_id,
+    d.nombre AS desarrolladora_nombre,
+    d.imagen_url,
+    d.fecha_fundacion,
+    d.pais_sede_central,
+    d.presidente_actual,
+    array_agg(
+    json_build_object(
+      'id', j.id,
+      'nombre', j.nombre,
+      'imagen_url', j.imagen_url,
+      'fecha_publicacion', j.fecha_publicacion,
+      'pegi', j.pegi,
+      'puntaje_metacritic', j.puntaje_metacritic
+    )
+    ) FILTER (WHERE j.id IS NOT NULL) AS juegos
+    FROM desarrolladoras d
+    LEFT JOIN juegos j ON j.desarrolladora_id = d.id
+    WHERE d.id = $1
+    GROUP BY d.id;`,[id])
+  if (result.rows.length == 0) {
+        return undefined;
+  }
+  return result.rows[0]
+}
 module.exports = {
     getAllDesarrolladoras,
     getDesarrolladoraById,
+    getDesarrolladoraWithDetails,
     existsDesarrolladoraById,
     existsDesarrolladoraByNombre,
     addDesarrolladora,
