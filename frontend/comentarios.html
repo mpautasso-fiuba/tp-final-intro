@@ -67,19 +67,17 @@
     </div>
   </footer>
 
+  <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
 
   <script>
-    const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+    const comentariosUrl = window._env_.API_URL + "/comentarios";
 
     async function mostrarComentarios(data) {
       const contenedor = document.getElementById("comentarios-list");
       contenedor.innerHTML = "";
 
       for (const c of data) {
-        let response = await fetch(`http://localhost:3000/api/v1/juegos/${c.juego_id}`);
-        const juego = await response.json();
-
         const fecha_formateada = new Date(c.fecha_publicacion).toLocaleDateString('en-CA');
 
         const comentarioCard = document.createElement("div");
@@ -90,7 +88,7 @@
             <div class="content">
                 <p>
                 <strong>${c.usuario}</strong>
-                <small>| Juego: ${juego.nombre}</small>
+                <small>| Juego: ${c.juego_nombre}</small>
                 <br/>
                 <span class="has-text-grey is-size-7">
                     Fecha: ${fecha_formateada || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}

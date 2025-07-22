@@ -1,7 +1,9 @@
 const dbClient = require('./db_conection.js');
 
 async function getAllComentarios() {
-  const result = await dbClient.query('SELECT * FROM comentarios');
+  const result = await dbClient.query(
+    'SELECT c.*, j.nombre as juego_nombre FROM comentarios c, juegos j WHERE c.juego_id = j.id'
+  );
   return result.rows;
 }
 

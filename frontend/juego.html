@@ -4,6 +4,7 @@
     <title>Juego</title>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <div id="navbar-container"></div>
@@ -45,18 +46,26 @@
 <br />
 <br />
     <div class="container">
-        <h2 class="title is-3 has-text-centered">Comentarios</h2>
+        <div class="columns is-vcentered">
+            <div class="column has-text-centered">
+                <h2 class="title is-3">Comentarios</h2>
+            </div>
+            <div class="column is-narrow has-text-right">
+                <button class="button is-primary" id="button-comentar">Comentar</button>
+            </div>
+        </div>
         <div id="comentarios-list" class="columns is-multiline"></div>
     </div>
 
 
+    <script src="./src/env.js"></script>
     <script src="./src/navbar.js"></script>
     <script>
         const id = new URLSearchParams(window.location.search).get('id');
         console.log(`Cargando juego con id: ${id}`);
 
-        const juegoBackendUrl = "http://localhost:3000/api/v1/juegos/" + id;
-        const comentariosUrl = "http://localhost:3000/api/v1/comentarios";
+        const juegoBackendUrl = window._env_.API_URL + "/juegos/" + id;
+        const comentariosUrl = window._env_.API_URL + "/comentarios";
  
         let juegoTitleBody = document.getElementById("juego-title");
         juegoTitleBody.innerHTML = "";
@@ -65,60 +74,73 @@
         let juegoDescripcionBody = document.getElementById("juego-description");
 
         let juego = {};
-        try {
-            fetch(juegoBackendUrl).then(response => {
-                console.log(response);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            }).then(juegoResult => {
-                console.log(juegoResult);
-                juego = juegoResult;
-                plataformas = juego.plataformas.filter(p => p !== null).map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
-                if (plataformas === "") {
-                    plataformas = "—";
-                }
-                generos = juego.generos.filter(p => p !== null).map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
-                if (generos === "") {
-                    generos = "—";
-                }
-                promedio_calificacion = juego.promedio_calificacion ? 
-                `<span class="tag is-link is-large">⭐${parseFloat(juego.promedio_calificacion).toFixed(2)}/10</span>` : "—";
 
-                fechaFormateada = new Date(juego.fecha_publicacion).toLocaleDateString('en-CA');
+        function cargarJuego(){
+            try {
+                fetch(juegoBackendUrl).then(response => {
+                    console.log(response);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                }).then(juegoResult => {
+                    console.log(juegoResult);
+                    juego = juegoResult;
+                    plataformas = juego.plataformas.filter(p => p !== null).map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
+                    if (plataformas === "") {
+                        plataformas = "—";
+                    }
+                    generos = juego.generos.filter(p => p !== null).map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
+                    if (generos === "") {
+                        generos = "—";
+                    }
+                    promedio_calificacion = juego.promedio_calificacion ? 
+                    `<span class="tag is-link is-large">⭐${parseFloat(juego.promedio_calificacion).toFixed(2)}/10</span>` : "—";
 
-                juegoTitleBody.innerHTML = juego.nombre;
-                juegoSidebarBody.innerHTML = `
-                    <p><strong>Desarrolladora:</strong> ${juego.desarrolladora}</p>
-                    <p><strong>Fecha de publicacion:</strong> ${fechaFormateada}</p>
-                    <p><strong>Web Oficial:</strong> <a href="${juego.web_oficial}" target="_blank">${juego.web_oficial}</a></p>
-                    <p><strong>Puntaje Metacritic:</strong> <span class="tag is-success is-medium">${juego.puntaje_metacritic}</span></p>
-                    <p><strong>Promedio comentarios:</strong> ${promedio_calificacion}</p>
-                    <p><strong>Géneros:</strong> ${generos}</p>
-                    <p><strong>Plataformas:</strong> ${plataformas}</p>
-                    <p><strong>Pegi:</strong> ${juego.pegi}</p>
-                    <p><strong>Precio:</strong> USD$ ${parseFloat(juego.precio_usd).toFixed(2)}</p>
-                    <div class="buttons is-centered">
-                    <button class="button is-info is-half" onclick="editarJuego(${juego.id})">Editar Juego</button>
-                    <button class="button is-danger is-hald" onclick="confirmDeleteJuego(${juego.id},'${juego.nombre}')"> Borrar Juego</button>
-                    </div>
-                `;
-                if (juego.imagen_url) {
-                    const imagenElement = document.getElementById("imagen");
-                    imagenElement.innerHTML = `<img src="${juego.imagen_url}" alt="${juego.nombre}" width="500" class="has-text-centered"/>`;
-                } else {
-                    const imagenElement = document.getElementById("imagen");
-                    imagenElement.innerHTML = `<p>No hay imagen disponible</p>`;
-                }
-                juegoDescripcionBody.innerHTML = juego.descripcion || "No hay descripción disponible.";
-            });
-        } catch (error) {
-            console.error('Error fetching juego:', error);
-            alert('Error al cargar el juego: ' + error.message);
+                    fechaFormateada = new Date(juego.fecha_publicacion).toLocaleDateString('en-CA');
 
+                    juegoTitleBody.innerHTML = juego.nombre;
+                    juegoSidebarBody.innerHTML = `
+                        <p><strong>Desarrolladora:</strong> ${juego.desarrolladora}</p>
+                        <p><strong>Fecha de publicacion:</strong> ${fechaFormateada}</p>
+                        <p><strong>Web Oficial:</strong> <a href="${juego.web_oficial}" target="_blank">${juego.web_oficial}</a></p>
+                        <p><strong>Puntaje Metacritic:</strong> <span class="tag is-success is-medium">${juego.puntaje_metacritic}</span></p>
+                        <p><strong>Promedio comentarios:</strong> ${promedio_calificacion}</p>
+                        <p><strong>Géneros:</strong> ${generos}</p>
+                        <p><strong>Plataformas:</strong> ${plataformas}</p>
+                        <p><strong>Pegi:</strong> ${juego.pegi}</p>
+                        <p><strong>Precio:</strong> USD$ ${parseFloat(juego.precio_usd).toFixed(2)}</p>
+                        <div class="buttons is-centered">
+                        <button class="button is-info is-half" onclick="editarJuego(${juego.id})">
+                            <span class="icon"><i class="fas fa-edit"></i></span>
+                            <span>Editar</span>
+                        </button>
+                        <button class="button is-danger is-hald" onclick="confirmDeleteJuego(${juego.id},'${juego.nombre}')"> 
+                            <span class="icon"><i class="fas fa-trash"></i></span>
+                            <span>Borrar Juego</span>
+                        </button>
+                        </div>
+                    `;
+                    if (juego.imagen_url) {
+                        const imagenElement = document.getElementById("imagen");
+                        imagenElement.innerHTML = `<img src="${juego.imagen_url}" alt="${juego.nombre}" width="500" class="has-text-centered"/>`;
+                    } else {
+                        const imagenElement = document.getElementById("imagen");
+                        imagenElement.innerHTML = `<p>No hay imagen disponible</p>`;
+                    }
+                    juegoDescripcionBody.innerHTML = juego.descripcion || "No hay descripción disponible.";
+                    document.getElementById("button-comentar").onclick = function() {
+                        window.location.href = `comentario-form.html?juego_id=${juego.id}`;
+                    };
+                    cargarComentariosDeJuego();
+                });
+            } catch (error) {
+                console.error('Error fetching juego:', error);
+                alert('Error al cargar el juego: ' + error.message);
+
+            }
         }
-        
+
         function editarJuego(id) {
             window.location.href = `./juego-form.html?id=${id}`;
         }
@@ -173,22 +195,31 @@
                         comentarioCard.innerHTML = `
                             <div class="box">
                                 <div class="media-content">
-                                    <div class="content">
-                                        <p>
-                                            <strong>${c.usuario}</strong> 
-                                            <small>| Juego ID: ${c.juego_id}</small>
-                                            <br/>
-                                            <span class="has-text-grey is-size-7">
-                                                Fecha: ${fecha_comentario} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
-                                            </span>
-                                            <br/><br/>
-                                            <span>${c.texto}</span>
-                                        </p>
-                                    </div>
-                                    <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>Borrar</button>
+                                <div class="content">
+                                    <p>
+                                    <strong>${c.usuario}</strong>
+                                    <small>| Juego: ${juego.nombre}</small>
+                                    <br/>
+                                    <span class="has-text-grey is-size-7">
+                                        Fecha: ${fecha_comentario || "—"} | Calificación: ${c.calificacion} ⭐ | Horas jugadas: ${c.horas_jugadas ?? "—"} | Terminado: ${c.terminado ? "Sí" : "No"}
+                                    </span>
+                                    <br/><br/>
+                                    <span>${c.texto}</span>
+                                    </p>
+                                </div>
+                                <div class="buttons mt-3">
+                                    <a class="button is-small is-info" href="comentario-form.html?id=${c.id}&juego_id=${juego.id}">
+                                    <span class="icon"><i class="fas fa-edit"></i></span>
+                                    <span>Editar</span>
+                                    </a>
+                                    <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                    <span>Borrar</span>
+                                    </button>
+                                </div>
                                 </div>
                             </div>
-                        `;
+                            `;
                         contenedor.appendChild(comentarioCard);
                     });
                 })
@@ -245,7 +276,7 @@
             container.classList.add('is-hidden');
         }
 
-        cargarComentariosDeJuego();
+        cargarJuego();
 
     </script>
 </body>
