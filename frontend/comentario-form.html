@@ -71,7 +71,7 @@
             </div>
             <div class="column is-full">
               <button class="button is-primary" id="form-submit" type="submit">Guardar</button>
-              <a class="button is-light" href="comentarios.html">Cancelar</a>
+              <a class="button is-light" href="comentarios.html" id="form-cancelar">Cancelar</a>
             </div>
           </div>
         </form>
@@ -80,12 +80,13 @@
   </section>
 
   <script src="./src/env.js"></script>
- <script src="./src/navbar.js"></script>
+  <script src="./src/navbar.js"></script>
 <script>
   const comentariosUrl = window._env_.API_URL + "/comentarios";
   const juegosSelect = document.getElementById("juegos-select");
   const params = new URLSearchParams(window.location.search);
   const comentarioId = params.get("id");
+  const juego_id = params.get("juego_id");
 
   async function cargar_formulario() {
     const response = await fetch(window._env_.API_URL + "/juegos");
@@ -115,8 +116,21 @@
       document.getElementById("form-terminado").value = comentario.terminado ? "true" : "false";
       document.getElementById("form-fecha_publicacion").disabled = true;
 
-      
+      if (juego_id && juego_id == comentario.juego_id) {
+        document.getElementById("juegos-select").disabled = true;        
+      }
+
+    } else if(juego_id) {
+      document.getElementById("juegos-select").value = juego_id;
+      document.getElementById("juegos-select").disabled = true;
     }
+
+    if(juego_id){
+      button_cancelar = document.getElementById("form-cancelar");
+      button_cancelar.href = `juego.html?id=${juego_id}`;
+      button_cancelar.textContent = "Volver al juego";
+    }
+
   }
   function agregarComentario() {
     const comentario = {
@@ -143,7 +157,13 @@
     })
     .then(() => {
       alert(comentarioId ? "Comentario actualizado correctamente" : "Comentario agregado correctamente");
-      window.location.href = "comentarios.html";
+      if( comentarioId  && juego_id) {
+        window.location.href = (comentarioId == juego_id) ? `juego.html?id=${juego_id}` : "comentarios.html";
+      } else if (juego_id) {
+        window.location.href = `juego.html?id=${juego_id}`;
+      } else {
+        window.location.href = "comentarios.html";
+      }
     })
     .catch(err => {
       console.error(err);
