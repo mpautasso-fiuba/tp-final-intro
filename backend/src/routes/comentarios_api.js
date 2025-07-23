@@ -96,7 +96,9 @@ app.post("/", async (req, res) => {
   if (terminado === undefined || terminado === null) {
     return res.status(400).json({ message: "Falta el campo 'terminado'" });
   }
-
+  if(horas_jugadas < 0){
+    return res.status(400).json({ message: "Horas de juego invalido" });
+  }
   try {
     const comentario = await addComentario({
       usuario: usuario.trim(),

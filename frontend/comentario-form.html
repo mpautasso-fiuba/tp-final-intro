@@ -26,6 +26,14 @@
   <div id="navbar-container"></div>
   <section class="section fade-in">
     <div class="container">
+      <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+      </div>
+      <div id="notification-container-info" class="notification is-info is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+        <span id="notification-message-info"></span>
+      </div>
       <h1 class="title has-text-centered">Agregar Comentario</h1>
       <div class="box">
         <form id="comentario-form" onsubmit="event.preventDefault(); agregarComentario();">
@@ -156,20 +164,39 @@
       return res.json();
     })
     .then(() => {
-      alert(comentarioId ? "Comentario actualizado correctamente" : "Comentario agregado correctamente");
-      if( comentarioId  && juego_id) {
-        window.location.href = (comentarioId == juego_id) ? `juego.html?id=${juego_id}` : "comentarios.html";
-      } else if (juego_id) {
-        window.location.href = `juego.html?id=${juego_id}`;
-      } else {
-        window.location.href = "comentarios.html";
-      }
+      showInfoNotification(comentarioId ? "Comentario actualizado correctamente" : "Comentario agregado correctamente");
+      setTimeout(() =>{
+        if( comentarioId  && juego_id) {
+          window.location.href = (comentarioId == juego_id) ? `juego.html?id=${juego_id}` : "comentarios.html";
+        } else if (juego_id) {
+          window.location.href = `juego.html?id=${juego_id}`;
+        } else {
+          window.location.href = "comentarios.html";
+        }
+      },1500);
     })
     .catch(err => {
       console.error(err);
-      alert("Error al guardar comentario: " + err.message);
+      showErrorNotification("Error al guardar comentario: " + err.message);
     });
   }
+    function showInfoNotification(message) {
+      closeNotification("notification-container-error");
+      const container = document.getElementById("notification-container-info");
+      container.classList.remove("is-hidden");
+      document.getElementById("notification-message-info").textContent = message;
+    }
+
+    function showErrorNotification(message) {
+      closeNotification("notification-container-info");
+      const container = document.getElementById("notification-container-error");
+      container.classList.remove("is-hidden");
+      document.getElementById("notification-message-error").textContent = message;
+    }
+
+    function closeNotification(id) {
+      document.getElementById(id).classList.add("is-hidden");
+    }
   cargar_formulario();
 </script>
 </body>

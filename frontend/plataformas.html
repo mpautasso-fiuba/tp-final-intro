@@ -88,11 +88,27 @@
       </p>
     </div>
   </footer>    
+  <div class="modal" id="activar-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Confirmar eliminación</p>
+      </header>
+      <section class="modal-card-body">
+        <p id="confirmar-mensaje">¿Estás seguro que querés eliminar esta plataforma?</p>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" onclick="deletePlataforma()">Eliminar</button>
+        <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
+      </footer>
+    </div>
+  </div>
   <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const plataformasBackendUrl = window._env_.API_URL + "/plataformas";
-
+    let idPlataformaAeliminar = null;
+    let nombrePlataformaAEliminar = "";
     function cargarPlataformas() {
       let tbody = document.getElementById("plataformas-table-body");
       tbody.innerHTML = "";
@@ -155,23 +171,40 @@
     }
 
     function deletePlataforma(id) {
-      fetch(`${plataformasBackendUrl}/${id}`, { method: 'DELETE' })
+      if(!idPlataformaAeliminar) return;
+
+      fetch(`${plataformasBackendUrl}/${idPlataformaAeliminar}`, { method: 'DELETE' })
         .then(response => {
-          if (!response.ok) {
-            return response.json().then(error => {
-              throw new Error(error.message || 'Error al eliminar la plataforma');
-            });
-          }
-          return response.json();
-        })
-        .then(() => {
-          showInfoNotification("Plataforma eliminada correctamente");
-          resetFormulario();
-          cargarPlataformas();
-        })
-        .catch(error => {
-          showErrorNotification(error.message);
-        });
+            if (!response.ok) {
+              return response.json().then(error => {
+                throw new Error(error.message || 'Error al eliminar la plataforma');
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            showInfoNotification(`Plataforma "${nombrePlataformaAEliminar}" eliminada correctamente.`);
+            resetFormulario();
+            cargarPlataformas();
+          })
+          .catch(error => {
+            showErrorNotification(error.message);
+          })
+          .finally(() => cerrarModalConfirmacion());
+        
+    }
+
+    function confirmDelete(id, nombre) {
+      idPlataformaAeliminar = id;
+      nombrePlataformaAEliminar = nombre;
+      document.getElementById("confirmar-mensaje").textContent = `¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`;
+      document.getElementById("activar-modal").classList.add("is-active");
+    }
+
+    function cerrarModalConfirmacion() {
+      document.getElementById("activar-modal").classList.remove("is-active");
+      idGeneroAEliminar = null;
+      nombreGeneroAEliminar = "";
     }
 
     function editarPlataforma(id, nombre) {
@@ -181,12 +214,6 @@
       document.getElementById("form-plataforma-submit").textContent = "Actualizar";
       document.getElementById("form-plataforma-cancelar-container").classList.remove("is-hidden");
       document.getElementById("plataforma-form").scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function confirmDelete(id, nombre) {
-      if (confirm(`¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`)) {
-        deletePlataforma(id);
-      }
     }
 
     function resetFormulario() {
