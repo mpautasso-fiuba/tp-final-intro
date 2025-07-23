@@ -5,6 +5,15 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    .fade-in {
+        animation: fadeIn 0.8s ease-in;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    </style>
 </head>
 <body>
     <div id="navbar-container"></div>
@@ -20,12 +29,12 @@
     </div>
     <br>
 
-    <div class="container">
+    <div class="container fade-in">
         <h1 class="title has-text-centered is-1" id="juego-title">Hollow Knight</h1>
         <br>        
     </div>
 
-  <div class="container">
+  <div class="container fade-in">
     <div class="columns">
       <div class="column is-two-thirds">
           <div class="box">
@@ -45,7 +54,7 @@
   </div>
 <br />
 <br />
-    <div class="container">
+    <div class="container fade-in">
         <div class="columns is-vcentered">
             <div class="column has-text-centered">
                 <h2 class="title is-3">Comentarios</h2>
@@ -57,6 +66,21 @@
         <div id="comentarios-list" class="columns is-multiline"></div>
     </div>
 
+    <div class="modal" id="activar-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+            <p class="modal-card-title">Confirmar eliminación</p>
+            </header>
+            <section class="modal-card-body">
+            <p id="confirmar-mensaje">¿Estás seguro que querés eliminar este juego?</p>
+            </section>
+            <footer class="modal-card-foot">
+            <button class="button is-danger" onclick="deleteJuego()">Eliminar</button>
+            <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
+            </footer>
+        </div>
+    </div>
 
     <script src="./src/env.js"></script>
     <script src="./src/navbar.js"></script>
@@ -74,6 +98,7 @@
         let juegoDescripcionBody = document.getElementById("juego-description");
 
         let juego = {};
+        let nombreJuegoAEliminar = "";
 
         function cargarJuego(){
             try {
@@ -145,31 +170,47 @@
             window.location.href = `./juego-form.html?id=${id}`;
         }
         
-        function deleteJuego(id) {
+        function deleteJuego() {
             console.log(`Borrando juego con id: ${id}`);
+
             fetch(`${juegoBackendUrl}`, {method: 'DELETE'})
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(error => {
-                        throw new Error(error.message || 'Error al eliminar el ítem');
+                        throw new Error(error.message || 'Error al eliminar el juego');
                     });
                 }
                 return response.json();
             }).then(data => {
                 console.log('Juego borrado:', data);
                 showInfoNotification("Juego borrado correctamente");
-                window.location.href = `./juegos.html`;
+                setTimeout(() => {
+                window.location.href = "./juegos.html";
+                }, 1500);
             }).catch(error => {
                 console.error('Error borrando juego:', error);
                 showErrorNotification(error.message);
-            });            
+            })
+            .finally(() => cerrarModalConfirmacion());        
+        }
+        function cerrarModalConfirmacion() {
+            document.getElementById("activar-modal").classList.remove("is-active");
+            nombreJuegoAEliminar = "";
+            comentarioIdAEliminar = null;
         }
 
         function confirmDeleteJuego(id, nombre) {
-            if (confirm(`¿Estás seguro que deseas borrar el juego "${nombre}"? Se eliminaran todos los comentarios de este juego.`)) {
-                deleteJuego(id);
-            }
+            nombreJuegoAEliminar = nombre;
+            const mensaje = document.getElementById("confirmar-mensaje");
+            mensaje.textContent = `¿Eliminar juego "${nombre}"? Se eliminarán todos los comentarios de este juego.`;
+            document.getElementById("activar-modal").classList.add("is-active");
+            const botonEliminar = document.querySelector("#activar-modal .button.is-danger");
+            botonEliminar.onclick = () => {
+                deleteJuego();
+                cerrarModalConfirmacion();
+            };
         }
+
 
         function cargarComentariosDeJuego() {
             fetch(`${comentariosUrl}/juego/${id}`)
@@ -247,11 +288,16 @@
                     showErrorNotification(err.message);
             });
         }
-
         function confirmDelete(comentario_id, usuario) {
-            if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
-                eliminarComentario(comentario_id)
-            }
+            comentarioIdAEliminar = comentario_id;
+            const mensaje = document.getElementById("confirmar-mensaje");
+            mensaje.textContent = `¿Eliminar comentario de "${usuario}"? Esta acción no se puede deshacer.`;
+            document.getElementById("activar-modal").classList.add("is-active");
+            const botonEliminar = document.querySelector("#activar-modal .button.is-danger");
+            botonEliminar.onclick = () => {
+                eliminarComentario(comentarioIdAEliminar);
+                cerrarModalConfirmacion();
+            };
         }
 
         function showInfoNotification(message) {
