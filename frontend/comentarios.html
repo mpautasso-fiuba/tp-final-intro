@@ -87,10 +87,12 @@
 
         juegos.forEach(juego => {
           console.log(juego)
-          const option = document.createElement("option");
-          option.textContent = juego.juego_nombre;
-          option.value = juego.juego_id;
-          select.appendChild(option);
+          if(juego.cantidad_comentarios != 0){
+            const option = document.createElement("option");
+            option.textContent = juego.juego_nombre;
+            option.value = juego.juego_id;
+            select.appendChild(option);
+          }
         });
       } catch (err) {
         showErrorNotification("Error al cargar juegos");
