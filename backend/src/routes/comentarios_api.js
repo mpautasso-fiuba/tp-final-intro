@@ -7,7 +7,8 @@ const {
   getComentariosByJuegoId,
   addComentario,
   updateComentario,
-  deleteComentario
+  deleteComentario,
+  getAllJuegosWithComentariosCount
 } = require("../repositories/comentarios_repository.js");
 const dbClient = require("../repositories/db_conection.js");
 
@@ -38,7 +39,18 @@ app.get("/juego/:juegoId", async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
+app.get("/juegos",async(req,res) => {
+    try {
+    const comentarios = await getAllJuegosWithComentariosCount();
+    if (comentarios.length === 0) {
+        return res.status(404).json({ message: "No se pudo encontrar comentarios en el id del juego solicitado" });
+    }
+    return res.status(200).json(comentarios);
+  } catch (error) {
+    console.error("Error al obtener comentarios por juego:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 // Obtenercomentario por ID
 app.get("/:id", async (req, res) => {
   const comentario_id = req.params.id;
@@ -96,9 +108,7 @@ app.post("/", async (req, res) => {
   if (terminado === undefined || terminado === null) {
     return res.status(400).json({ message: "Falta el campo 'terminado'" });
   }
-  if(horas_jugadas < 0){
-    return res.status(400).json({ message: "Horas de juego invalido" });
-  }
+
   try {
     const comentario = await addComentario({
       usuario: usuario.trim(),

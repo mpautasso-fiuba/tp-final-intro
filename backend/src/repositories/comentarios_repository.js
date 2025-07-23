@@ -14,15 +14,37 @@ async function getComentarioById(id) {
   );
   return result.rows[0];
 }
-
+async function getAllJuegosWithComentariosCount(){
+  const results = await dbClient.query(
+    `SELECT 
+      j.id AS juego_id,
+      j.nombre AS juego_nombre,
+      COUNT(c.id) AS cantidad_comentarios
+    FROM juegos j
+    LEFT JOIN comentarios c ON c.juego_id = j.id
+    GROUP BY j.id
+      `
+  );
+  if (results.rows.length == 0) {
+        return undefined;
+  }
+  return results.rows;
+}
 async function getComentariosByJuegoId(juegoId) {
   const result = await dbClient.query(
-    'SELECT * FROM comentarios WHERE juego_id = $1',
+    `SELECT 
+      c.*, 
+      j.nombre AS juego_nombre 
+    FROM 
+      comentarios c
+    JOIN 
+      juegos j ON c.juego_id = j.id
+    WHERE 
+      c.juego_id = $1;`,
     [juegoId]
   );
   return result.rows;
 }
-
 async function addComentario(data) {
   const {
     usuario,
@@ -88,6 +110,7 @@ module.exports = {
   getAllComentarios,
   getComentarioById,
   getComentariosByJuegoId,
+  getAllJuegosWithComentariosCount,
   addComentario,
   updateComentario,
   deleteComentario,

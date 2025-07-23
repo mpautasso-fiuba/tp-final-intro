@@ -73,28 +73,12 @@
       </p>
     </div>
   </footer>
-  <div class="modal" id="activar-modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title">Confirmar eliminación</p>
-      </header>
-      <section class="modal-card-body">
-        <p id="confirmar-mensaje">¿Estás seguro que querés eliminar este comentario?</p>
-      </section>
-      <footer class="modal-card-foot">
-        <button class="button is-danger" onclick="confirmarEliminacion()">Eliminar</button>
-        <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
-      </footer>
-    </div>
-  </div>
 
   <script src="./src/env.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const comentariosUrl = window._env_.API_URL + "/comentarios";
-    const juegosUrl = window._env_.API_URL + "/juegos";
-
+    const juegosUrl = window._env_.API_URL + "/comentarios/juegos";
     async function cargaJuegos() {
       try {
         const response = await fetch(juegosUrl);
@@ -102,9 +86,10 @@
         const select = document.getElementById("select-filtro-juego");
 
         juegos.forEach(juego => {
+          console.log(juego)
           const option = document.createElement("option");
-          option.textContent = juego.nombre;
-          option.value = juego.id;
+          option.textContent = juego.juego_nombre;
+          option.value = juego.juego_id;
           select.appendChild(option);
         });
       } catch (err) {
@@ -143,7 +128,7 @@
                 <span class="icon"><i class="fas fa-edit"></i></span>
                 <span>Editar</span>
               </a>
-              <button class="button is-small is-danger" onclick='borrar(${c.id}, "${c.usuario}")'>
+              <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
                 <span class="icon"><i class="fas fa-trash"></i></span>
                 <span>Borrar</span>
               </button>
@@ -195,37 +180,28 @@
         });
     }
 
-    let idAEliminar = null;
-    let nombreAEliminar = "";
-    
-    function borrar(id, nombre) {
-      idAEliminar = id;
-      nombreAEliminar = nombre;
-      document.getElementById("confirmar-mensaje").textContent = `¿Eliminar comentario de  "${nombre}"?`;
-      document.getElementById("activar-modal").classList.add("is-active");
-    }
-
-    function cerrarModalConfirmacion() {
-      document.getElementById("activar-modal").classList.remove("is-active");
-      idAEliminar = null;
-      nombreAEliminar = "";
-    }
-
-    function confirmarEliminacion() {
-      if (!idAEliminar) return;
-      fetch(`${comentariosUrl}/${idAEliminar}`, { method: "DELETE" })
+    function eliminarComentario(id) {
+      fetch(`${comentariosUrl}/${id}`, { method: "DELETE" })
         .then(res => {
-          if (!res.ok) throw new Error("Error al eliminar el comentario.");
+          if (!res.ok) return res.text().then(text => { throw new Error(text); });
+          return res.json();
+        })
+        .then(() => {
+          showInfoNotification("Comentario eliminado");
           cargarComentarios();
-          showInfoNotification(`Comentario de "${nombreAEliminar}" eliminado.`);
         })
         .catch(err => {
           console.error(err);
-          showErrorNotification("No se pudo eliminar eliminar el comentario.");
-        })
-        .finally(() => cerrarModalConfirmacion());
+          showErrorNotification(err.message);
+        });
     }
 
+    function confirmDelete(id, usuario) {
+      if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
+        document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
+        eliminarComentario(id);
+      }
+    }
 
     function showInfoNotification(message) {
       closeNotification("notification-container-error");
