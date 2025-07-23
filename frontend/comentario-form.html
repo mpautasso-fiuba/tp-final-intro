@@ -97,12 +97,12 @@
   const juego_id = params.get("juego_id");
 
   async function cargar_formulario() {
-    const response = await fetch(window._env_.API_URL + "/juegos");
+    const response = await fetch(window._env_.API_URL + "/comentarios/juegos");
     const juegos = await response.json();
     juegos.forEach(juego => {
       const option = document.createElement("option");
-      option.textContent = juego.nombre;
-      option.value = juego.id;
+      option.textContent = juego.juego_nombre;
+      option.value = juego.juego_id;
       juegosSelect.appendChild(option);
     });
     if (comentarioId) {
