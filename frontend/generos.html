@@ -100,6 +100,7 @@
   </div>
 
   <script src="./src/env.js"></script>
+  <script src="./src/string_utils.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const generosBackendUrl = window._env_.API_URL + "/generos";    
@@ -119,8 +120,15 @@
             let row = document.createElement("tr");
             row.innerHTML = `
               <td>${genero.nombre}</td>
-              <td><button class="button is-info is-small" onClick="editarGenero(${genero.id}, '${genero.nombre}')"><i class="fas fa-edit"></i></button></td>
-              <td><button class="button is-danger is-small" onClick="confirmDelete(${genero.id}, '${genero.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+              <td><button class="button is-info is-small" 
+                data-id="${genero.id}" 
+                data-nombre="${escapeHtml(genero.nombre)}"
+                onClick="editarGenero(this)"><i class="fas fa-edit"></i></button></td>
+              <td><button class="button is-danger is-small" 
+                data-id="${genero.id}" 
+                data-nombre="${escapeHtml(genero.nombre)}"
+                onClick="confirmDelete(this)">
+                <i class="fas fa-trash-alt"></i></button></td>
             `;
             generosTableBody.appendChild(row);
           });
@@ -184,10 +192,10 @@
         })
         .finally(() => cerrarModalConfirmacion());
     }
-    function confirmDelete(id, nombre) {
-      idGeneroAEliminar = id;
-      nombreGeneroAEliminar = nombre;
-      document.getElementById("confirmar-mensaje").textContent = `¿Estás seguro que deseas borrar el género "${nombre}"? Todos los juegos dejarán de tener este género.`;
+    function confirmDelete(button) {
+      idGeneroAEliminar = button.dataset.id;
+      nombreGeneroAEliminar = button.dataset.nombre;
+      document.getElementById("confirmar-mensaje").textContent = `¿Estás seguro que deseas borrar el género "${nombreGeneroAEliminar}"? Todos los juegos dejarán de tener este género.`;
       document.getElementById("activar-modal").classList.add("is-active");
     }
 
@@ -197,9 +205,9 @@
       nombreGeneroAEliminar = "";
     }
 
-    function editarGenero(id, nombre) {
-      document.getElementById("form-genero-id").value = id;
-      document.getElementById("form-genero-nombre").value = nombre;
+    function editarGenero(button) {
+      document.getElementById("form-genero-id").value = button.dataset.id;
+      document.getElementById("form-genero-nombre").value = button.dataset.nombre;
       document.getElementById("form-genero-label").textContent = "Editar género";
       document.getElementById("form-genero-submit").textContent = "Actualizar";
       document.getElementById("form-genero-cancelar-container").classList.remove("is-hidden");

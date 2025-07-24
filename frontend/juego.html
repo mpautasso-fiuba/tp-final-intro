@@ -83,6 +83,7 @@
     </div>
 
     <script src="./src/env.js"></script>
+    <script src="./src/string_utils.js"></script>
     <script src="./src/navbar.js"></script>
     <script>
         const id = new URLSearchParams(window.location.search).get('id');
@@ -140,9 +141,12 @@
                             <span class="icon"><i class="fas fa-edit"></i></span>
                             <span>Editar</span>
                         </button>
-                        <button class="button is-danger is-hald" onclick="confirmDeleteJuego(${juego.id},'${juego.nombre}')"> 
-                            <span class="icon"><i class="fas fa-trash"></i></span>
-                            <span>Borrar Juego</span>
+                        <button class="button is-danger is-hald" 
+                            data-id="${juego.id}" 
+                            data-nombre="${escapeHtml(juego.nombre)}"
+                            onclick="confirmDeleteJuego(this)"> 
+                                <span class="icon"><i class="fas fa-trash"></i></span>
+                                <span>Borrar Juego</span>
                         </button>
                         </div>
                     `;
@@ -199,10 +203,10 @@
             comentarioIdAEliminar = null;
         }
 
-        function confirmDeleteJuego(id, nombre) {
-            nombreJuegoAEliminar = nombre;
+        function confirmDeleteJuego(button) {
+            nombreJuegoAEliminar = button.dataset.nombre;
             const mensaje = document.getElementById("confirmar-mensaje");
-            mensaje.textContent = `¿Eliminar juego "${nombre}"? Se eliminarán todos los comentarios de este juego.`;
+            mensaje.textContent = `¿Eliminar juego "${nombreJuegoAEliminar}"? Se eliminarán todos los comentarios de este juego.`;
             document.getElementById("activar-modal").classList.add("is-active");
             const botonEliminar = document.querySelector("#activar-modal .button.is-danger");
             botonEliminar.onclick = () => {
@@ -250,12 +254,15 @@
                                 </div>
                                 <div class="buttons mt-3">
                                     <a class="button is-small is-info" href="comentario-form.html?id=${c.id}&juego_id=${juego.id}">
-                                    <span class="icon"><i class="fas fa-edit"></i></span>
-                                    <span>Editar</span>
+                                        <span class="icon"><i class="fas fa-edit"></i></span>
+                                        <span>Editar</span>
                                     </a>
-                                    <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
-                                    <span class="icon"><i class="fas fa-trash"></i></span>
-                                    <span>Borrar</span>
+                                    <button class="button is-small is-danger" 
+                                    data-comentario_id="${c.id}" 
+                                    data-usuario="${escapeHtml(c.usuario)}"
+                                    onclick='confirmDeleteComentario(this)'>
+                                        <span class="icon"><i class="fas fa-trash"></i></span>
+                                        <span>Borrar</span>
                                     </button>
                                 </div>
                                 </div>
@@ -288,10 +295,11 @@
                     showErrorNotification(err.message);
             });
         }
-        function confirmDelete(comentario_id, usuario) {
-            comentarioIdAEliminar = comentario_id;
+        function confirmDeleteComentario(button) {
+            comentarioIdAEliminar = button.dataset.comentario_id;
+            userComentarioAEliminar = button.dataset.usuario;
             const mensaje = document.getElementById("confirmar-mensaje");
-            mensaje.textContent = `¿Eliminar comentario de "${usuario}"? Esta acción no se puede deshacer.`;
+            mensaje.textContent = `¿Eliminar comentario de "${userComentarioAEliminar}"? Esta acción no se puede deshacer.`;
             document.getElementById("activar-modal").classList.add("is-active");
             const botonEliminar = document.querySelector("#activar-modal .button.is-danger");
             botonEliminar.onclick = () => {
