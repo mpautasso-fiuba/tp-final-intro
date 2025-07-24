@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+<head>
+    <title>Juegos</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  .fade-in {
+    animation: fadeIn 0.8s ease-in;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <section class="hero is-primary is-bold fade-in">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+            <h1 class="title">Listado de Juegos <i class="fas fa-gamepad"></i></h1>
+            </div>
+        </div>
+    </section>
+    <section class="section fade-in">
+        <div class="container">
+            <div id="notification-container-error" class="notification is-danger is-hidden">
+                <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+                <span id="notification-message-error"></span>
+            </div>
+        
+            <div id="notification-container-info" class="notification is-info is-hidden">
+                <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+                <span id="notification-message-info"></span>
+            </div>
+            <br>
+            <button class="button is-primary" onclick="window.location.href='juego-form.html'">Agregar nuevo Juego</button>
+            <br/>
+            <br/>
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Desarrolladora</th>
+                        <th>Puntaje Metacritic</th>
+                        <th>Promedio comentarios</th>
+                        <th>Generos</th>
+                        <th>Plataformas</th>
+                        <th>Ver pagina</th>
+                        <th>Borrar</th>
+                    </tr>
+                </thead>
+                <tbody id="juegos-table-body"></tbody>
+            </table>
+        </div>
+    </section>
+    <hr/>
+    <footer class="footer">
+        <div class="content has-text-centered">
+        <p>
+            <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+        </p>
+        </div>
+    </footer>
+    <div class="modal" id="activar-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+            <p class="modal-card-title">Confirmar eliminación</p>
+            </header>
+            <section class="modal-card-body">
+            <p id="confirmar-mensaje">¿Estás seguro que querés eliminar este juego?</p>
+            </section>
+            <footer class="modal-card-foot">
+            <button class="button is-danger" onclick="deleteJuego()">Eliminar</button>
+            <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
+            </footer>
+        </div>
+    </div>
+    <script src="./src/env.js"></script>
+    <script src="./src/navbar.js"></script>
+    <script>
+        const juegosBackendUrl = window._env_.API_URL + "/juegos";
+        let idJuegoAEliminar = null;
+        let nombreJuegoAEliminar = "";
+        function cargarJuegos() {
+            let juegosTableBody = document.getElementById("juegos-table-body");
+            juegosTableBody.innerHTML = "";
+
+            try {
+                fetch(juegosBackendUrl).then(response => {
+                    console.log(response);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                }).then(data => {
+                    console.log(data);
+                    data.forEach(juego => {
+                        plataformas = juego.plataformas.filter(p => p !== null).map(p => `<span class="tag is-warning">${p}</span>`).join(" ");
+                        if (plataformas === "") {
+                            plataformas = "—";
+                        }
+                        generos = juego.generos.filter(p => p !== null).map(g => `<span class="tag is-primary">${g}</span>`).join(" ");
+                        if (generos === "") {
+                            generos = "—";
+                        }
+                        promedio_calificacion = juego.promedio_calificacion ? 
+                        `<span class="tag is-link is-large">⭐${parseFloat(juego.promedio_calificacion).toFixed(2)}/10</span>` : "—";
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${juego.imagen_url ? `<img src="${juego.imagen_url}" width="150"/>` : "—"}</td>
+                            <td>${juego.nombre}</td>
+                            <td>${juego.desarrolladora}</td>
+                            <td><span class="tag is-success is-large">${juego.puntaje_metacritic}</span></td>
+                            <td>${promedio_calificacion}</td>
+                            <td>${generos}</td>
+                            <td>${plataformas}</td>
+                            <td><button class="button is-link is-small" onClick="verJuego(${juego.id})"><i class="fas fa-eye"></i> Ver</button></td>
+                            <td><button class="button is-danger is-small" onclick="confirmDeleteJuego(${juego.id}, '${juego.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+                        `;
+                        juegosTableBody.appendChild(row);
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching juegos:', error);
+            }
+        }
+        
+        function agregarJuego() {
+            const nombre = document.getElementById("form-genero-nombre").value;
+            const id = document.getElementById("form-genero-id").value;
+
+            if (!nombre.trim()) {
+                showErrorNotification("El nombre no puede estar vacío.");
+                return;
+            }
+
+            const metodo = id ? 'PUT' : 'POST';
+            const url = id ? `${generosBackendUrl}/${id}` : generosBackendUrl;
+
+            fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.message || 'Error al guardar el género');
+                    });
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Género agregado:', data);
+                showInfoNotification("Género agregado correctamente");
+                resetFormulario();
+                cargarJuegos();
+            }).catch(error => {
+                console.error('Error agregando género:', error);
+                showErrorNotification(error.message);
+            });
+        }
+                
+        function deleteJuego() {
+            if (!idJuegoAEliminar) return;
+            console.log(`Borrando juego con id: ${idJuegoAEliminar}`);
+
+            fetch(`${juegosBackendUrl}/${idJuegoAEliminar}`, {method: 'DELETE'})
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.message || 'Error al eliminar el juego');
+                    });
+                }
+                return response.json();
+            }).then(data => {
+                console.log('Juego borrado:', data);
+                showInfoNotification(`Juego "${nombreJuegoAEliminar}" eliminado`);
+                cargarJuegos();
+            }).catch(error => {
+                console.error('Error borrando juego:', error);
+                showErrorNotification(error.message);
+            })
+            .finally(() => cerrarModalConfirmacion());        
+        }
+        function cerrarModalConfirmacion() {
+            document.getElementById("activar-modal").classList.remove("is-active");
+            idJuegoAEliminar = null;
+            nombreJuegoAEliminar = "";
+        }
+
+        function verJuego(id) {
+            window.location.href = `./juego.html?id=${id}`;
+        }
+        function confirmDeleteJuego(id, nombre) {
+            idJuegoAEliminar = id;
+            nombreJuegoAEliminar = nombre;
+            const mensaje = document.getElementById("confirmar-mensaje");
+            mensaje.textContent = `¿Eliminar juego "${nombre}"? Se eliminarán todos los comentarios de este juego.`;
+            document.getElementById("activar-modal").classList.add("is-active");
+        }
+        function showInfoNotification(message) {
+            closeNotification('notification-container-error');
+            const container = document.getElementById('notification-container-info');
+            const msg = document.getElementById('notification-message-info');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+            closeNotification('notification-container-error');
+        }
+
+        function showErrorNotification(message) {
+            closeNotification('notification-container-info');
+            const container = document.getElementById('notification-container-error');
+            const msg = document.getElementById('notification-message-error');
+            msg.textContent = message;
+            container.classList.remove('is-hidden');
+        }
+
+        function closeNotification(notificationId) {
+            const container = document.getElementById(notificationId);
+            container.classList.add('is-hidden');
+        }
+
+        cargarJuegos();
+    </script>
+</body>
+</html>

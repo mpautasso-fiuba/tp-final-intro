@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Desarrolladoras</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <section class="hero is-primary is-bold fade-in">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Desarrolladoras de videojuegos <i class="fas fa-building"></i></h1>
+      </div>
+    </div>
+  </section>
+
+  <section class="section fade-in">
+    <div class="container">
+      <div id="notification-container-error" class="notification is-danger is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-error')"></button>
+        <span id="notification-message-error"></span>
+      </div>
+      <div id="notification-container-info" class="notification is-info is-hidden">
+        <button class="delete" onclick="closeNotification('notification-container-info')"></button>
+        <span id="notification-message-info"></span>
+      </div>
+      <div class="has-text-left mb-4">
+        <button class="button is-primary" onclick="window.location.href='desarrolladora-form.html'">Agregar desarrolladora</button>
+      </div>
+      <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Imagen</th>
+              <th>Fundación</th>
+              <th>País</th>
+              <th>Presidente</th>
+              <th>Ver página</th>
+              <th>Borrar</th>
+            </tr>
+          </thead>
+          <tbody id="desarrolladoras-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+      </p>
+    </div>
+  </footer>
+  <div class="modal" id="activar-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Confirmar eliminación</p>
+      </header>
+      <section class="modal-card-body">
+        <p id="confirmar-mensaje">¿Estás seguro que querés eliminar esta desarrolladora?</p>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" onclick="confirmDelete()">Eliminar</button>
+        <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./src/env.js"></script>
+  <script src="./src/navbar.js"></script>
+  <script>
+    const desarrolladorasUrl = window._env_.API_URL + "/desarrolladoras";
+
+    function cargarDesarrolladoras() {
+      fetch(desarrolladorasUrl)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("desarrolladoras-table-body");
+          tbody.innerHTML = "";
+          data.forEach(d => {
+            const fecha = new Date(d.fecha_fundacion).toLocaleDateString('en-CA');
+            tbody.innerHTML += `
+              <tr>
+                <td>${d.nombre}</td>
+                <td>${d.imagen_url ? `<img src="${d.imagen_url}" width="50"/>` : "—"}</td>
+                <td>${fecha}</td>
+                <td>${d.pais_sede_central}</td>
+                <td>${d.presidente_actual}</td>
+                <td><a class="button is-link is-small" href="detalles-desarrolladora.html?id=${d.id}"><i class="fas fa-eye"></i> Ver</a></td>
+                <td><button class="button is-danger is-small" onclick='borrar(${d.id}, "${d.nombre}")'><i class="fas fa-trash-alt"></i></button></td>
+              </tr>
+            `;
+          });
+        });
+    }
+    let idAEliminar = null;
+    let nombreAEliminar = "";
+    
+    function borrar(id, nombre) {
+      idAEliminar = id;
+      nombreAEliminar = nombre;
+      document.getElementById("confirmar-mensaje").textContent =  `¿Eliminar desarrolladora "${nombre}"? Se eliminaran todos los juegos de esta desarrolladora.`;
+      document.getElementById("activar-modal").classList.add("is-active");
+    }
+
+    function cerrarModalConfirmacion() {
+      document.getElementById("activar-modal").classList.remove("is-active");
+      idAEliminar = null;
+      nombreAEliminar = "";
+    }
+
+    function confirmDelete() {
+      if (!idAEliminar) return;
+      fetch(`${desarrolladorasUrl}/${idAEliminar}`, { method: "DELETE" })
+        .then(res => {
+          if (!res.ok) throw new Error("Error al eliminar la desarrolladora.");
+          cargarDesarrolladoras();
+          showInfoNotification(`Desarrolladora "${nombreAEliminar}" eliminada.`);
+        })
+        .catch(err => {
+          console.error(err);
+          showErrorNotification("No se pudo eliminar la desarrolladora.");
+        })
+        .finally(() => cerrarModalConfirmacion());
+    }
+
+    function showInfoNotification(message) {
+      closeNotification('notification-container-error');
+      const container = document.getElementById('notification-container-info');
+      const msg = document.getElementById('notification-message-info');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function showErrorNotification(message) {
+      closeNotification('notification-container-info');
+      const container = document.getElementById('notification-container-error');
+      const msg = document.getElementById('notification-message-error');
+      msg.textContent = message;
+      container.classList.remove('is-hidden');
+    }
+
+    function closeNotification(notificationId) {
+      const container = document.getElementById(notificationId);
+      container.classList.add('is-hidden');
+    }
+
+    cargarDesarrolladoras();
+  </script>
+</body>
+</html>

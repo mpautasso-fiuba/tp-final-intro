@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Home</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    .fade-image {
+      transition: opacity 0.5s ease-in-out;
+      opacity: 1;
+    }
+    .fade-out {
+      opacity: 0;
+    }
+    .image img {
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .fade-in {
+      animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+  <section class="hero is-primary is-bold fade-in">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">¡Bienvenido a Super sBASH Games!</h1>
+        <h2 class="subtitle">La comunidad definitiva para fanáticos de los videojuegos 🎮🔥</h2>
+      </div>
+    </div>
+  </section>
+
+  <div class="card has-text-centered fade-in" style="width: 60%; margin: auto; margin-top: 2rem;">
+    <div class="card-image">
+      <figure class="image" style="margin: auto;">
+        <img id="ciclo-imagen"
+             class="fade-image"
+             src="./src/assets/videojuegos.jpg"
+             alt="Juego destacado">
+      </figure>
+    </div>
+  </div>
+  <p id="nombre-juego" class="has-text-centered mt-2 is-size-5 has-text-weight-semibold fade-in"></p>
+
+  <section class="section fade-in">
+    <div class="container">
+      <div class="columns is-multiline">
+        <div class="column is-one-third">
+          <a href="./juegos.html" class="box has-text-centered">
+            <p class="title is-4"><i class="fas fa-gamepad"></i> Juegos</p>
+            <p class="subtitle is-6">Listado completo</p>
+          </a>
+        </div>
+        <div class="column is-one-third">
+          <a href="./comentarios.html" class="box has-text-centered">
+            <p class="title is-4"><i class="fas fa-comments"></i> Comentarios</p>
+            <p class="subtitle is-6">Opiniones y calificaciones</p>
+          </a>
+        </div>
+        <div class="column is-one-third">
+          <a href="./desarrolladoras.html" class="box has-text-centered">
+            <p class="title is-4"><i class="fas fa-building"></i> Desarrolladoras</p>
+            <p class="subtitle is-6">Conocé a los creadores</p>
+          </a>
+        </div>
+      </div>
+      <div class="columns is-centered mt-5">
+        <div class="column has-text-centered">
+          <p class="title" id="total-juegos">–</p>
+          <p class="subtitle">Juegos registrados</p>
+        </div>
+        <div class="column has-text-centered">
+          <p class="title" id="total-comentarios">–</p>
+          <p class="subtitle">Comentarios recibidos</p>
+        </div>
+        <div class="column has-text-centered">
+          <p class="title" id="total-desarrolladoras">–</p>
+          <p class="subtitle">Desarrolladoras</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>Super sBASH Games</strong> • Tu comunidad gamer favorita • Hecho por Manu.P y Rodri.U.
+      </p>
+    </div>
+  </footer>
+  <script src="./src/env.js"></script>
+  <script src="./src/navbar.js"></script>
+  <script>
+    const apiUrl = window._env_.API_URL;
+    async function cargarEstadisticas() {
+      try {
+        fetch(`${apiUrl}/juegos`)
+            .then(response => response.json())
+            .then(data =>{
+                cantidad_juegos = data.length
+                document.getElementById('total-juegos').textContent = cantidad_juegos;
+            })
+        fetch(`${apiUrl}/comentarios`)
+            .then(response => response.json())
+            .then(data =>{
+                cantidad_comentarios = data.length
+                document.getElementById('total-comentarios').textContent = cantidad_comentarios;
+        })
+        fetch(`${apiUrl}/desarrolladoras`)
+            .then(response => response.json())
+            .then(data =>{
+                cantidad_desarrolladoras = data.length
+                document.getElementById('total-desarrolladoras').textContent = cantidad_desarrolladoras;
+        })
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('total-juegos').textContent = '¡Error!';
+        document.getElementById('total-desarrolladoras').textContent = '¡Error!';
+        document.getElementById('total-comentarios').textContent = '¡Error!';
+      }
+    }
+
+    let juegos = [];
+    let indiceActual = 0;
+
+    async function obtenerJuegos() {
+      try {
+        const respuesta = await fetch(`${apiUrl}/juegos`);
+        const datos = await respuesta.json();
+        juegos = datos;
+        mostrarJuego();
+        setInterval(mostrarJuego, 5000);
+      } catch (error) {
+        console.error("Error al obtener los juegos:", error);
+        document.getElementById("nombre-juego").innerText = "Error al cargar juegos.";
+      }
+    }
+
+    function mostrarJuego() {
+      if (juegos.length === 0) return;
+
+      const img = document.getElementById("ciclo-imagen");
+
+      img.classList.add("fade-out");
+
+      setTimeout(() => {
+        img.src = juegos[indiceActual].imagen_url;
+        document.getElementById("nombre-juego").textContent = juegos[indiceActual].nombre;
+        img.classList.remove("fade-out");
+        indiceActual = (indiceActual + 1) % juegos.length;
+      }, 500);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarEstadisticas();
+      obtenerJuegos();
+    });
+  </script>
+</body>
+</html>
