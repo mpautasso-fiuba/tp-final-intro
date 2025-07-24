@@ -32,6 +32,24 @@ Backend:
 
 ---
 
+## 🌍 Versión desplegada
+
+Podés acceder a la versión en línea del proyecto a través de Render:
+
+- 🔗 **Frontend:** [https://tp-final-intro-frontend.onrender.com/](https://tp-final-intro-frontend.onrender.com/)
+- 🔗 **Backend (API REST):** [https://tp-final-intro-lfwl.onrender.com](https://tp-final-intro-lfwl.onrender.com)
+
+> ⚠️ Tené en cuenta que Render puede tardar unos segundos en levantar los servicios si están "en reposo".
+
+👉 **Si sigue fallando**, ingresá al siguiente URL manualmente para asegurarte de que el backend se active correctamente:  
+[https://tp-final-intro-lfwl.onrender.com](https://tp-final-intro-lfwl.onrender.com)
+
+
+### Nota
+Estas versiones apuntan a la rama **production**.
+
+---
+
 ## ⚙️ Requisitos
 
 Para ejecutar el proyecto con Docker **no es necesario tener Node.js ni npm instalados** localmente.
