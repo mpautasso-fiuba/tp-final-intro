@@ -1,3 +1,3 @@
 window._env_ = {
-  API_URL: "http://localhost:3000/api/v1"
+  API_URL: "https://tp-final-intro-lfwl.onrender.com/api/v1"
 };
