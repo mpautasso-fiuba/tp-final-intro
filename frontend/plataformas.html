@@ -104,6 +104,7 @@
     </div>
   </div>
   <script src="./src/env.js"></script>
+  <script src="./src/string_utils.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const plataformasBackendUrl = window._env_.API_URL + "/plataformas";
@@ -123,8 +124,16 @@
             let row = document.createElement("tr");
             row.innerHTML = `
               <td>${p.nombre}</td>
-              <td><button class="button is-info is-small" onClick="editarPlataforma(${p.id}, '${p.nombre}')"><i class="fas fa-edit"></i></button></td>
-              <td><button class="button is-danger is-small" onClick="confirmDelete(${p.id}, '${p.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+              <td><button class="button is-info is-small" 
+                data-id="${p.id}" 
+                data-nombre="${escapeHtml(p.nombre)}"
+                onClick="editarPlataforma(this)">
+                <i class="fas fa-edit"></i></button></td>
+              <td><button class="button is-danger is-small" 
+                data-id="${p.id}" 
+                data-nombre="${escapeHtml(p.nombre)}"
+                onClick="confirmDelete(this)">
+                <i class="fas fa-trash-alt"></i></button></td>
             `;
             tbody.appendChild(row);
           });
@@ -194,10 +203,10 @@
         
     }
 
-    function confirmDelete(id, nombre) {
-      idPlataformaAeliminar = id;
-      nombrePlataformaAEliminar = nombre;
-      document.getElementById("confirmar-mensaje").textContent = `¿Estás seguro que deseas borrar la plataforma "${nombre}"? Todos los juegos dejarán de estar en esta plataforma.`;
+    function confirmDelete(button) {
+      idPlataformaAeliminar = button.dataset.id;
+      nombrePlataformaAEliminar = button.dataset.nombre;
+      document.getElementById("confirmar-mensaje").textContent = `¿Estás seguro que deseas borrar la plataforma "${nombrePlataformaAEliminar}"? Todos los juegos dejarán de estar en esta plataforma.`;
       document.getElementById("activar-modal").classList.add("is-active");
     }
 
@@ -207,9 +216,9 @@
       nombreGeneroAEliminar = "";
     }
 
-    function editarPlataforma(id, nombre) {
-      document.getElementById("form-plataforma-id").value = id;
-      document.getElementById("form-plataforma-nombre").value = nombre;
+    function editarPlataforma(button) {
+      document.getElementById("form-plataforma-id").value = button.dataset.id;
+      document.getElementById("form-plataforma-nombre").value = button.dataset.nombre;
       document.getElementById("form-plataforma-label").textContent = "Editar plataforma";
       document.getElementById("form-plataforma-submit").textContent = "Actualizar";
       document.getElementById("form-plataforma-cancelar-container").classList.remove("is-hidden");
