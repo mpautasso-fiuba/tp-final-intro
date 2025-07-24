@@ -82,6 +82,7 @@
         </div>
     </div>
     <script src="./src/env.js"></script>
+    <script src="./src/string_utils.js"></script>
     <script src="./src/navbar.js"></script>
     <script>
         const juegosBackendUrl = window._env_.API_URL + "/juegos";
@@ -121,7 +122,11 @@
                             <td>${generos}</td>
                             <td>${plataformas}</td>
                             <td><button class="button is-link is-small" onClick="verJuego(${juego.id})"><i class="fas fa-eye"></i> Ver</button></td>
-                            <td><button class="button is-danger is-small" onclick="confirmDeleteJuego(${juego.id}, '${juego.nombre}')"><i class="fas fa-trash-alt"></i></button></td>
+                            <td><button class="button is-danger is-small" 
+                                data-id="${juego.id}" 
+                                data-nombre="${escapeHtml(juego.nombre)}"
+                                onclick="confirmDeleteJuego(this)">
+                                <i class="fas fa-trash-alt"></i></button></td>
                         `;
                         juegosTableBody.appendChild(row);
                     });
@@ -197,11 +202,11 @@
         function verJuego(id) {
             window.location.href = `./juego.html?id=${id}`;
         }
-        function confirmDeleteJuego(id, nombre) {
-            idJuegoAEliminar = id;
-            nombreJuegoAEliminar = nombre;
+        function confirmDeleteJuego(button) {
+            idJuegoAEliminar = button.dataset.id;
+            nombreJuegoAEliminar = button.dataset.nombre;
             const mensaje = document.getElementById("confirmar-mensaje");
-            mensaje.textContent = `¿Eliminar juego "${nombre}"? Se eliminarán todos los comentarios de este juego.`;
+            mensaje.textContent = `¿Eliminar juego "${nombreJuegoAEliminar}"? Se eliminarán todos los comentarios de este juego.`;
             document.getElementById("activar-modal").classList.add("is-active");
         }
         function showInfoNotification(message) {

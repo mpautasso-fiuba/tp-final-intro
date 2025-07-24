@@ -75,6 +75,7 @@
   </footer>
 
   <script src="./src/env.js"></script>
+  <script src="./src/string_utils.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const comentariosUrl = window._env_.API_URL + "/comentarios";
@@ -130,7 +131,10 @@
                 <span class="icon"><i class="fas fa-edit"></i></span>
                 <span>Editar</span>
               </a>
-              <button class="button is-small is-danger" onclick='confirmDelete(${c.id}, "${c.usuario}")'>
+              <button class="button is-small is-danger" 
+                data-id="${c.id}" 
+                data-nombre="${escapeHtml(c.usuario)}"
+              onclick='confirmDelete(this)'>
                 <span class="icon"><i class="fas fa-trash"></i></span>
                 <span>Borrar</span>
               </button>
@@ -198,10 +202,10 @@
         });
     }
 
-    function confirmDelete(id, usuario) {
-      if (confirm(`¿Eliminar comentario de "${usuario}"?`)) {
+    function confirmDelete(button) {
+      if (confirm(`¿Eliminar comentario de "${button.dataset.nombre}"?`)) {
         document.getElementById("navbar-container").scrollIntoView({ behavior: 'smooth' });
-        eliminarComentario(id);
+        eliminarComentario(button.dataset.id);
       }
     }
 
