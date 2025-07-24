@@ -75,13 +75,14 @@
         <p id="confirmar-mensaje">¿Estás seguro que querés eliminar esta desarrolladora?</p>
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-danger" onclick="confirmDelete()">Eliminar</button>
+        <button class="button is-danger" onclick="deleteDesarrolladora()">Eliminar</button>
         <button class="button" onclick="cerrarModalConfirmacion()">Cancelar</button>
       </footer>
     </div>
   </div>
 
   <script src="./src/env.js"></script>
+  <script src="./src/string_utils.js"></script>
   <script src="./src/navbar.js"></script>
   <script>
     const desarrolladorasUrl = window._env_.API_URL + "/desarrolladoras";
@@ -102,7 +103,11 @@
                 <td>${d.pais_sede_central}</td>
                 <td>${d.presidente_actual}</td>
                 <td><a class="button is-link is-small" href="detalles-desarrolladora.html?id=${d.id}"><i class="fas fa-eye"></i> Ver</a></td>
-                <td><button class="button is-danger is-small" onclick='borrar(${d.id}, "${d.nombre}")'><i class="fas fa-trash-alt"></i></button></td>
+                <td><button class="button is-danger is-small"  
+                  data-id="${d.id}" 
+                  data-nombre="${escapeHtml(d.nombre)}"
+                  onclick='confirmDelete(this)'>
+                  <i class="fas fa-trash-alt"></i></button></td>
               </tr>
             `;
           });
@@ -111,10 +116,10 @@
     let idAEliminar = null;
     let nombreAEliminar = "";
     
-    function borrar(id, nombre) {
-      idAEliminar = id;
-      nombreAEliminar = nombre;
-      document.getElementById("confirmar-mensaje").textContent =  `¿Eliminar desarrolladora "${nombre}"? Se eliminaran todos los juegos de esta desarrolladora.`;
+    function confirmDelete(button) {
+      idAEliminar = button.dataset.id;
+      nombreAEliminar = button.dataset.nombre;
+      document.getElementById("confirmar-mensaje").textContent =  `¿Eliminar desarrolladora "${nombreAEliminar}"? Se eliminaran todos los juegos de esta desarrolladora.`;
       document.getElementById("activar-modal").classList.add("is-active");
     }
 
@@ -124,7 +129,7 @@
       nombreAEliminar = "";
     }
 
-    function confirmDelete() {
+    function deleteDesarrolladora() {
       if (!idAEliminar) return;
       fetch(`${desarrolladorasUrl}/${idAEliminar}`, { method: "DELETE" })
         .then(res => {
